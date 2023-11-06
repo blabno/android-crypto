@@ -76,12 +76,6 @@ public class Authenticator {
                             super.onAuthenticationSucceeded(result);
                             future.complete(result.getCryptoObject());
                         }
-
-                        @Override
-                        public void onAuthenticationFailed() {
-                            super.onAuthenticationFailed();
-                            future.completeExceptionally(new AuthenticationFailedException());
-                        }
                     };
 
                     BiometricPrompt biometricPrompt = new BiometricPrompt((FragmentActivity) activity, executor, authCallback);
