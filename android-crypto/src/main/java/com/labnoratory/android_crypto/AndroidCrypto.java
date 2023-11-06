@@ -1,5 +1,6 @@
 package com.labnoratory.android_crypto;
 
+import android.app.Activity;
 import android.os.Build;
 import android.security.keystore.KeyGenParameterSpec;
 import android.security.keystore.KeyInfo;
@@ -34,8 +35,14 @@ import java.security.spec.ECGenParameterSpec;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.MGF1ParameterSpec;
 import java.security.spec.RSAKeyGenParameterSpec;
+import java.util.Collections;
+import java.util.Map;
+import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
 
+import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
+import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.KeyGenerator;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
@@ -45,6 +52,7 @@ import javax.crypto.spec.OAEPParameterSpec;
 import javax.crypto.spec.PSource;
 
 import androidx.annotation.NonNull;
+import androidx.biometric.BiometricPrompt;
 
 public class AndroidCrypto {
 
@@ -93,6 +101,100 @@ public class AndroidCrypto {
         getKeyStore().deleteEntry(alias);
     }
 
+    public byte[] decrypt(String alias, byte[] cipherText, byte[] iv) throws UnrecoverableKeyException, KeyStoreException, NoSuchAlgorithmException, InvalidKeySpecException, NoSuchProviderException, InvalidAlgorithmParameterException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
+        KeyInfo keyInfo = getKeyInfo(alias);
+        if (keyInfo.isUserAuthenticationRequired()) {
+            throw new IllegalStateException("Key requires user authentication");
+        }
+        Cipher cipher = initializeSymmetricCipherForDecryption(alias, iv);
+        return cipher.doFinal(cipherText);
+    }
+
+    public CompletableFuture<byte[]> decrypt(@NonNull Activity activity, @NonNull String alias, @NonNull byte[] cipherText, @NonNull byte[] iv) {
+        return decrypt(activity,alias,cipherText,iv,Collections.emptyMap());
+    }
+
+    public CompletableFuture<byte[]> decrypt(@NonNull Activity activity, @NonNull String alias, @NonNull byte[] cipherText, @NonNull byte[] iv, @NonNull Map<String, Object> options) {
+        CompletableFuture<byte[]> future = new CompletableFuture<>();
+
+        try {
+            Cipher cipher = initializeSymmetricCipherForDecryption(alias, iv);
+
+            KeyInfo keyInfo = getKeyInfo(alias);
+            if (!keyInfo.isUserAuthenticationRequired()) {
+                byte[] result = cipher.doFinal(cipherText);
+                future.complete(result);
+                return future;
+            }
+
+            BiometricPrompt.CryptoObject cryptoObject = new BiometricPrompt.CryptoObject(cipher);
+            Authenticator.authenticate(activity, options, cryptoObject)
+                    .whenCompleteAsync((result, throwable) -> {
+                        if (null != throwable) {
+                            future.completeExceptionally(throwable);
+                            return;
+                        }
+                        try {
+                            Cipher blessedCipher = Objects.requireNonNull(result.getCipher());
+                            byte[] decryptionResult = blessedCipher.doFinal(cipherText);
+                            future.complete(decryptionResult);
+                        } catch (Exception e) {
+                            future.completeExceptionally(e);
+                        }
+                    });
+        } catch (Exception ex) {
+            future.completeExceptionally(ex);
+        }
+        return future;
+    }
+
+    public EncryptionResult encrypt(@NonNull String alias, @NonNull byte[] bytesToEncrypt) throws UnrecoverableKeyException, NoSuchPaddingException, KeyStoreException, NoSuchAlgorithmException, InvalidKeyException, InvalidKeySpecException, NoSuchProviderException, IllegalBlockSizeException, BadPaddingException {
+
+        KeyInfo keyInfo = getKeyInfo(alias);
+        if (keyInfo.isUserAuthenticationRequired()) {
+            throw new IllegalStateException("Key requires user authentication");
+        }
+        Cipher cipher = initializeSymmetricCipherForEncryption(alias);
+        return doEncrypt(bytesToEncrypt, cipher);
+    }
+
+    public CompletableFuture<EncryptionResult> encrypt(@NonNull Activity activity, @NonNull String alias, @NonNull byte[] bytesToEncrypt) {
+        return encrypt(activity, alias, bytesToEncrypt, Collections.emptyMap());
+    }
+
+    public CompletableFuture<EncryptionResult> encrypt(@NonNull Activity activity, @NonNull String alias, @NonNull byte[] bytesToEncrypt, @NonNull Map<String, Object> options) {
+        CompletableFuture<EncryptionResult> future = new CompletableFuture<>();
+
+        try {
+            Cipher cipher = initializeSymmetricCipherForEncryption(alias);
+
+            KeyInfo keyInfo = getKeyInfo(alias);
+            if (!keyInfo.isUserAuthenticationRequired()) {
+                EncryptionResult result = doEncrypt(bytesToEncrypt, cipher);
+                future.complete(result);
+                return future;
+            }
+
+            BiometricPrompt.CryptoObject cryptoObject = new BiometricPrompt.CryptoObject(cipher);
+            Authenticator.authenticate(activity, options, cryptoObject)
+                    .whenCompleteAsync((result, throwable) -> {
+                        if (null != throwable) {
+                            future.completeExceptionally(throwable);
+                            return;
+                        }
+                        try {
+                            EncryptionResult encryptionResult = doEncrypt(bytesToEncrypt, Objects.requireNonNull(result.getCipher()));
+                            future.complete(encryptionResult);
+                        } catch (Exception e) {
+                            future.completeExceptionally(e);
+                        }
+                    });
+        } catch (Exception ex) {
+            future.completeExceptionally(ex);
+        }
+        return future;
+    }
+
     public SecretKey deriveSecretKey(@NonNull byte[] password, @NonNull byte[] salt, int iterations) {
         PKCS5S2ParametersGenerator generator = new PKCS5S2ParametersGenerator(new SHA256Digest());
         generator.init(password, salt, iterations);
@@ -139,11 +241,11 @@ public class AndroidCrypto {
         return initializeSymmetricCipherForEncryption(secretKey);
     }
 
-    public Cipher initializeSymmetricCipherForDecryption(@NonNull String alias, @NonNull byte[] iv) throws Exception {
+    public Cipher initializeSymmetricCipherForDecryption(@NonNull String alias, @NonNull byte[] iv) throws UnrecoverableKeyException, KeyStoreException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, NoSuchPaddingException, InvalidKeyException {
         return initializeSymmetricCipherForDecryption(getSecretKey(alias), iv);
     }
 
-    public Cipher initializeSymmetricCipherForDecryption(@NonNull SecretKey secretKey, @NonNull byte[] iv) throws Exception {
+    public Cipher initializeSymmetricCipherForDecryption(@NonNull SecretKey secretKey, @NonNull byte[] iv) throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, InvalidKeyException {
         Cipher cipher = Cipher.getInstance(AES_ALGORITHM);
         GCMParameterSpec spec = new GCMParameterSpec(128, iv);
         cipher.init(Cipher.DECRYPT_MODE, secretKey, spec);
@@ -158,7 +260,7 @@ public class AndroidCrypto {
         return cipher;
     }
 
-    public Cipher initializeAsymmetricCipherForDecryption(@NonNull String alias) throws Exception {
+    public Cipher initializeAsymmetricCipherForDecryption(@NonNull String alias) throws UnrecoverableKeyException, KeyStoreException, NoSuchAlgorithmException, NoSuchPaddingException, InvalidAlgorithmParameterException, InvalidKeyException {
         PrivateKey privateKey = getAsymmetricEncryptionPrivateKey(alias);
         OAEPParameterSpec spec = getOAEPParameterSpec();
         Cipher cipher = Cipher.getInstance(RSA_ALGORITHM);
@@ -305,6 +407,12 @@ public class AndroidCrypto {
         if (!expectedAlgorithm.equals(actualAlgorithm)) {
             throw new WrongKeyTypeException(String.format("Expected key algorithm %s, actual %s", expectedAlgorithm, actualAlgorithm));
         }
+    }
+
+    private static EncryptionResult doEncrypt(@NonNull byte[] bytesToEncrypt, @NonNull Cipher cipher) throws IllegalBlockSizeException, BadPaddingException {
+        byte[] encryptedBytes = cipher.doFinal(bytesToEncrypt);
+        byte[] iv = cipher.getIV();
+        return new EncryptionResult(encryptedBytes, iv);
     }
 
     private static KeyNotFoundException keyNotFound(String alias) {

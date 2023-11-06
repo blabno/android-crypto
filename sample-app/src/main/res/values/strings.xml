@@ -1,3 +1,14 @@
 <resources>
     <string name="app_name">SampleApp</string>
+    <string name="authenticate">Authenticate</string>
+    <string name="inputLabel">Input</string>
+    <string name="encrypt">Encrypt</string>
+    <string name="createSymmetricEncryptionKey">Create symmetric\nencryption key</string>
+    <string name="removeSymmetricEncryptionKey">Remove symmetric\nencryption key</string>
+    <string name="accessLevel_authentication_required">Authentication required</string>
+    <string name="accessLevel_always">Available always</string>
+    <string name="encryptSymmetrically">Encrypt\nsymmetrically</string>
+    <string name="ivLabel">Initialization vector</string>
+    <string name="cipherTextLabel">Cipher text</string>
+    <string name="decryptSymmetrically">Decrypt\nsymmetrically</string>
 </resources>
