@@ -8,7 +8,7 @@ android {
     compileSdk = 33
 
     defaultConfig {
-        minSdk = 27
+        minSdk = 24
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles("consumer-rules.pro")
@@ -49,9 +49,9 @@ publishing {
 
 dependencies {
 
+    api("androidx.biometric:biometric:1.1.0")
     implementation("androidx.appcompat:appcompat:1.6.1")
-    implementation("androidx.biometric:biometric:1.1.0")
-    implementation("org.bouncycastle:bcpkix-jdk15to18:1.68")
+    implementation("org.bouncycastle:bcpkix-jdk15to18:1.76")
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test:runner:1.5.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
