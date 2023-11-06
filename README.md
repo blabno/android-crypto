@@ -1,3 +1,22 @@
+## Testing
+
+Install Appium
+
+    yarn global add appium   
+
+Start Appium
+
+    appium
+
+Start emulator
+
+    emulator -avd Nexus_6P_API_29
+
+Run tests:
+
+    ./gradlew clean :e2e:testDebugUnitTest
+
+
 ## Scenarios that require manual testing
 
 ### Sign with key that requires authentication, and user got authenticated

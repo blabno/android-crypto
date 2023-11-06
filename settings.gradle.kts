@@ -17,3 +17,4 @@ dependencyResolutionManagement {
 rootProject.name = "Android Crypto"
 include(":android-crypto")
 include(":sample-app")
+include(":e2e")

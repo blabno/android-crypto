@@ -1,4 +1,4 @@
-package com.labnoratory.sample_app;
+package com.labnoratory.android_device.e2e;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -12,33 +12,27 @@ import io.appium.java_client.AppiumBy;
 import io.appium.java_client.android.AndroidDriver;
 import io.appium.java_client.android.options.UiAutomator2Options;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
-/**
- * Example local unit test, which will execute on the development machine (host).
- *
- * @see <a href="http://d.android.com/tools/testing">Testing documentation</a>
- */
-public class ExampleUnitTest {
+public class AndroidDeviceE2ETest {
 
     private static AndroidDriver driver;
 
     @BeforeClass
     public static void beforeClass() throws Exception {
         UiAutomator2Options options = new UiAutomator2Options()
-                .setAppPackage("com.labnoratory.sample_app")
-                .setAppActivity("com.labnoratory.sample_app.MainActivity");
-//                .setApp("./sample-app/build/intermediates/apk/debug/sample-app-debug.apk");
+                .setApp("./sample-app/build/outputs/apk/debug/sample-app-debug.apk");
         driver = new AndroidDriver(new URL("http://127.0.0.1:4723"), options);
     }
 
     @AfterClass
     public static void afterClass() {
-        driver.quit();
+        if (null != driver) driver.quit();
     }
 
     @Test
-    public void addition_isCorrect() {
+    public void authenticate() {
         setupFingerprint();
         adbShell("am start com.labnoratory.sample_app/.MainActivity");
         sleep(1000);
@@ -102,10 +96,12 @@ public class ExampleUnitTest {
     }
 
     private static void scanFinger(int fingerIndex) {
-        adb("-e emu finger touch "+fingerIndex);
+        adb("-e emu finger touch " + fingerIndex);
     }
 
-    /** @noinspection unused*/
+    /**
+     * @noinspection unused
+     */
     private static void emulateBackButton() {
         adbShell("input keyevent 4");
     }
