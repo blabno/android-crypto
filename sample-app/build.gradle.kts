@@ -36,6 +36,7 @@ dependencies {
     implementation(project(":android-crypto"))
 
     implementation("androidx.appcompat:appcompat:1.6.1")
+    implementation("androidx.viewpager2:viewpager2:1.0.0")
     implementation("com.google.android.material:material:1.10.0")
     implementation("androidx.constraintlayout:constraintlayout:2.1.4")
     implementation("commons-codec:commons-codec:1.16.0")

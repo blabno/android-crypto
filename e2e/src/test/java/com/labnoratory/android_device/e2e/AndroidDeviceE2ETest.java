@@ -38,7 +38,7 @@ public class AndroidDeviceE2ETest {
         sleep(1000);
         WebElement status = driver.findElement(AppiumBy.id("status"));
         assertTrue(status.isDisplayed());
-        assertEquals("Hello World!", status.getText());
+        assertEquals("", status.getText());
         WebElement button = driver.findElement(AppiumBy.id("authenticateButton"));
         assertTrue(button.isDisplayed());
         button.click();

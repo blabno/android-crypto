@@ -1,231 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:layout_width="match_parent">
+    android:orientation="vertical"
+    tools:context=".MainActivity">
 
-    <androidx.constraintlayout.widget.ConstraintLayout
+    <androidx.viewpager2.widget.ViewPager2
+        android:id="@+id/viewPager"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="0dp"
+        android:layout_weight="1"
         android:paddingHorizontal="@dimen/horizontal_padding"
         android:paddingVertical="@dimen/vertical_padding"
-        tools:context=".MainActivity">
+        app:layout_behavior="@string/appbar_scrolling_view_behavior" />
 
-        <TextView
-            android:id="@+id/status"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+    <com.google.android.material.tabs.TabLayout
+        android:id="@+id/tabLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
 
-        <TextView
-            android:id="@+id/inputLabel"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/vertical_padding_x2"
-            android:labelFor="@id/input"
-            android:text="@string/inputLabel"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/status" />
-
-        <EditText
-            android:id="@+id/input"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:autofillHints="no"
-            android:inputType="text"
-            android:maxWidth="488dp"
-            android:minHeight="48dp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/inputLabel" />
-
-        <TextView
-            android:id="@+id/cipherTextLabel"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:labelFor="@id/cipherText"
-            android:text="@string/cipherTextLabel"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/input" />
-
-        <EditText
-            android:id="@+id/cipherText"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:autofillHints="no"
-            android:inputType="text"
-            android:maxWidth="488dp"
-            android:minHeight="48dp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/cipherTextLabel" />
-
-        <TextView
-            android:id="@+id/ivLabel"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:labelFor="@id/iv"
-            android:text="@string/ivLabel"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/cipherText" />
-
-        <EditText
-            android:id="@+id/iv"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:autofillHints="no"
-            android:inputType="text"
-            android:maxWidth="488dp"
-            android:minHeight="48dp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/ivLabel" />
-
-        <androidx.appcompat.widget.SwitchCompat
-            android:id="@+id/symmetricKeyRequiresAuthentication"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:onClick="onSymmetricKeyRequiresAuthenticationClick"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/iv" />
-
-        <Button
-            android:id="@+id/createSymmetricKeyButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:onClick="onCreateSymmetricKeyClick"
-            android:text="@string/createSymmetricEncryptionKey" />
-
-        <Button
-            android:id="@+id/removeSymmetricKeyButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:onClick="onRemoveSymmetricKeyClick"
-            android:text="@string/removeSymmetricEncryptionKey" />
-
-        <Button
-            android:id="@+id/encryptSymmetricallyButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:onClick="onEncryptSymmetricallyClick"
-            android:text="@string/encryptSymmetrically" />
-
-        <Button
-            android:id="@+id/decryptSymmetricallyButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:onClick="onDecryptSymmetricallyClick"
-            android:text="@string/decryptSymmetrically" />
-
-        <Button
-            android:id="@+id/createAsymmetricKeyButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:onClick="onCreateAsymmetricKeyClick"
-            android:text="@string/createAsymmetricEncryptionKey" />
-
-        <Button
-            android:id="@+id/removeAsymmetricKeyButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:onClick="onRemoveAsymmetricKeyClick"
-            android:text="@string/removeAsymmetricEncryptionKey" />
-
-        <Button
-            android:id="@+id/encryptAsymmetricallyButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:onClick="onEncryptAsymmetricallyClick"
-            android:text="@string/encryptAsymmetrically" />
-
-        <Button
-            android:id="@+id/decryptAsymmetricallyButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:onClick="onDecryptAsymmetricallyClick"
-            android:text="@string/decryptAsymmetrically" />
-
-        <Button
-            android:id="@+id/encryptSymmetricallyWithPasswordButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:onClick="onEncryptSymmetricallyWithPasswordClick"
-            android:text="@string/encryptSymmetricallyWithPassword" />
-
-        <Button
-            android:id="@+id/decryptSymmetricallyWithPasswordButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:onClick="onDecryptSymmetricallyWithPasswordClick"
-            android:text="@string/decryptSymmetricallyWithPassword" />
-
-        <androidx.constraintlayout.helper.widget.Flow
-            android:id="@+id/flow"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/vertical_padding"
-            android:orientation="horizontal"
-            app:constraint_referenced_ids="createSymmetricKeyButton,removeSymmetricKeyButton,encryptSymmetricallyButton,decryptSymmetricallyButton"
-            app:flow_horizontalGap="20dp"
-            app:flow_horizontalStyle="packed"
-            app:flow_wrapMode="chain"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/symmetricKeyRequiresAuthentication" />
-
-
-
-        <androidx.appcompat.widget.SwitchCompat
-            android:id="@+id/asymmetricKeyRequiresAuthentication"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:onClick="onAsymmetricKeyRequiresAuthenticationClick"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/flow" />
-
-        <androidx.constraintlayout.helper.widget.Flow
-            android:id="@+id/flow2"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/vertical_padding"
-            android:orientation="horizontal"
-            app:constraint_referenced_ids="createAsymmetricKeyButton,removeAsymmetricKeyButton,encryptAsymmetricallyButton,decryptAsymmetricallyButton"
-            app:flow_horizontalGap="20dp"
-            app:flow_horizontalStyle="packed"
-            app:flow_wrapMode="chain"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/asymmetricKeyRequiresAuthentication" />
-
-        <androidx.constraintlayout.helper.widget.Flow
-            android:id="@+id/flow3"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/vertical_padding"
-            android:orientation="horizontal"
-            app:constraint_referenced_ids="encryptSymmetricallyWithPasswordButton,decryptSymmetricallyWithPasswordButton"
-            app:flow_horizontalGap="20dp"
-            app:flow_horizontalStyle="packed"
-            app:flow_wrapMode="chain"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/flow2" />
-
-        <Button
-            android:id="@+id/authenticateButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/vertical_padding"
-            android:onClick="onAuthenticateClick"
-            android:text="@string/authenticate"
-            app:layout_constraintTop_toBottomOf="@+id/flow3"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            />
-
-    </androidx.constraintlayout.widget.ConstraintLayout>
-</ScrollView>
+</LinearLayout>
