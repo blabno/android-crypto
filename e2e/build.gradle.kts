@@ -15,6 +15,7 @@ android {
 
 dependencies {
     testImplementation("junit:junit:4.13.2")
+    testImplementation("org.hamcrest:hamcrest:2.2")
     testImplementation("com.github.appium:java-client:v8.6.0")
 }
 

@@ -12,13 +12,6 @@ import androidx.fragment.app.FragmentActivity;
 import androidx.viewpager2.adapter.FragmentStateAdapter;
 import androidx.viewpager2.widget.ViewPager2;
 
-enum Tabs {
-    Authenticate,
-    EncryptAsymmetrically,
-    EncryptSymmetrically,
-    EncryptWithPassword,
-}
-
 public class MainActivity extends AppCompatActivity {
 
     @Override
@@ -37,16 +30,16 @@ public class MainActivity extends AppCompatActivity {
         return (tab, position) -> {
             switch (position) {
                 case 0:
-                    tab.setTag(Tabs.Authenticate).setText("Authenticate");
+                    tab.setText("Authenticate");
                     break;
                 case 1:
-                    tab.setTag(Tabs.EncryptSymmetrically).setText("Encrypt\nsymmetrically");
+                    tab.setText("Encrypt\nsymmetrically");
                     break;
                 case 2:
-                    tab.setTag(Tabs.EncryptAsymmetrically).setText("Encrypt\nasymmetrically");
+                    tab.setText("Encrypt\nasymmetrically");
                     break;
                 case 3:
-                    tab.setTag(Tabs.EncryptWithPassword).setText("Encrypt\nwith password");
+                    tab.setText("Encrypt\nwith password");
                     break;
             }
         };

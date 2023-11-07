@@ -12,7 +12,12 @@ import io.appium.java_client.AppiumBy;
 import io.appium.java_client.android.AndroidDriver;
 import io.appium.java_client.android.options.UiAutomator2Options;
 
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.emptyString;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 
 public class AndroidDeviceE2ETest {
@@ -24,6 +29,7 @@ public class AndroidDeviceE2ETest {
         UiAutomator2Options options = new UiAutomator2Options()
                 .setApp("./sample-app/build/outputs/apk/debug/sample-app-debug.apk");
         driver = new AndroidDriver(new URL("http://127.0.0.1:4723"), options);
+        setupFingerprint();
     }
 
     @AfterClass
@@ -33,9 +39,6 @@ public class AndroidDeviceE2ETest {
 
     @Test
     public void authenticate() {
-        setupFingerprint();
-        adbShell("am start com.labnoratory.sample_app/.MainActivity");
-        sleep(1000);
         WebElement status = driver.findElement(AppiumBy.id("status"));
         assertTrue(status.isDisplayed());
         assertEquals("", status.getText());
@@ -48,6 +51,34 @@ public class AndroidDeviceE2ETest {
         scanFinger(1);
         sleep(1000);
         assertEquals("Authentication successful", status.getText());
+    }
+
+    @Test
+    public void encryptSymmetrically() {
+        clearAppData();
+        new MainTabsFragment(driver).clickSymmetricEncryption();
+        SymmetricEncryptionFragment encryptionTab = new SymmetricEncryptionFragment(driver);
+        assertThat(encryptionTab.getCipherText(), is(emptyString()));
+        assertThat(encryptionTab.getIv(), is(emptyString()));
+        encryptionTab
+                .assertStatus("")
+                .createKey()
+                .assertStatus("Encryption key created successfully")
+                .setInput("Bimbo")
+                .clickEncryptButton()
+                .assertStatus("Data encrypted successfully");
+        String cipherText = encryptionTab.getCipherText();
+        String iv = encryptionTab.getIv();
+        assertThat(cipherText, is(not(emptyString())));
+        assertThat(iv, is(not(emptyString())));
+        encryptionTab.clickDecryptButton().assertStatus("Decryption result:\n.*\nString: Bimbo");
+        encryptionTab.setInput("Turbo").clickEncryptButton().assertStatus("Data encrypted successfully");
+        assertNotEquals(cipherText, encryptionTab.getCipherText());
+        assertNotEquals(iv, encryptionTab.getIv());
+    }
+
+    private static void clearAppData() {
+        adbShell("pm clear start com.labnoratory.sample_app");
     }
 
     private static void setupFingerprint() {
@@ -73,6 +104,8 @@ public class AndroidDeviceE2ETest {
         sleep(500);
         scanFinger(1);
         sleep(500);
+        adbShell("am start com.labnoratory.sample_app/.MainActivity");
+        sleep(1000);
     }
 
     private static void sleep(long millis) {
