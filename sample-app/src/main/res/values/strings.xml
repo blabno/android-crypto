@@ -15,4 +15,6 @@
     <string name="createAsymmetricEncryptionKey">Create asymmetric\nencryption key</string>
     <string name="removeAsymmetricEncryptionKey">Remove asymmetric\nencryption key</string>
     <string name="encryptAsymmetrically">Encrypt\nasymmetrically</string>
+    <string name="encryptSymmetricallyWithPassword">Encrypt symmetrically\nwith password</string>
+    <string name="decryptSymmetricallyWithPassword">Decrypt symmetrically\nwith password</string>
 </resources>

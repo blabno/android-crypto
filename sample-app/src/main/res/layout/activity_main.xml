@@ -149,6 +149,20 @@
             android:onClick="onDecryptAsymmetricallyClick"
             android:text="@string/decryptAsymmetrically" />
 
+        <Button
+            android:id="@+id/encryptSymmetricallyWithPasswordButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:onClick="onEncryptSymmetricallyWithPasswordClick"
+            android:text="@string/encryptSymmetricallyWithPassword" />
+
+        <Button
+            android:id="@+id/decryptSymmetricallyWithPasswordButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:onClick="onDecryptSymmetricallyWithPasswordClick"
+            android:text="@string/decryptSymmetricallyWithPassword" />
+
         <androidx.constraintlayout.helper.widget.Flow
             android:id="@+id/flow"
             android:layout_width="0dp"
@@ -187,6 +201,20 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/asymmetricKeyRequiresAuthentication" />
 
+        <androidx.constraintlayout.helper.widget.Flow
+            android:id="@+id/flow3"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/vertical_padding"
+            android:orientation="horizontal"
+            app:constraint_referenced_ids="encryptSymmetricallyWithPasswordButton,decryptSymmetricallyWithPasswordButton"
+            app:flow_horizontalGap="20dp"
+            app:flow_horizontalStyle="packed"
+            app:flow_wrapMode="chain"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/flow2" />
+
         <Button
             android:id="@+id/authenticateButton"
             android:layout_width="wrap_content"
@@ -194,7 +222,7 @@
             android:layout_marginTop="@dimen/vertical_padding"
             android:onClick="onAuthenticateClick"
             android:text="@string/authenticate"
-            app:layout_constraintTop_toBottomOf="@+id/flow2"
+            app:layout_constraintTop_toBottomOf="@+id/flow3"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             />

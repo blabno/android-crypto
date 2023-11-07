@@ -157,6 +157,32 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    public void onDecryptSymmetricallyWithPasswordClick(View view) {
+        CompletableFuture<byte[]> future = new CompletableFuture<>();
+        try {
+            byte[] password = "Hello World!".getBytes(StandardCharsets.UTF_8);
+            byte[] salt = "?!?".getBytes(StandardCharsets.UTF_8);
+            int iterations = 1024;
+            byte[] cipherText = Hex.decodeHex(((TextView) findViewById(R.id.cipherText)).getText().toString());
+            byte[] iv = Hex.decodeHex(((TextView) findViewById(R.id.iv)).getText().toString());
+            try {
+                future.complete(crypto.decryptSymmetricallyWithPassword(password, salt, iterations, cipherText, iv));
+            } catch (Exception e) {
+                future.completeExceptionally(e);
+            }
+        } catch (Exception e) {
+            future.completeExceptionally(e);
+        }
+
+        future.whenComplete((decryptionResult, throwable) -> {
+            if (null != throwable) {
+                handleError(throwable);
+                return;
+            }
+            setStatus(String.format("Decryption result:\nHex: %s\nString: %s", Hex.encodeHexString(decryptionResult), new String(decryptionResult)));
+        });
+    }
+
     public void onEncryptAsymmetricallyClick(View view) {
         try {
             byte[] bytesToEncrypt = ((TextView) findViewById(R.id.input)).getText().toString().getBytes(StandardCharsets.UTF_8);
@@ -189,6 +215,35 @@ public class MainActivity extends AppCompatActivity {
                                 future.completeExceptionally(throwable);
                             } else future.complete(encryptionResult);
                         });
+            }
+        } catch (Exception e) {
+            future.completeExceptionally(e);
+        }
+
+        future.whenComplete((encryptionResult, throwable) -> {
+            if (null != throwable) {
+                handleError(throwable);
+                return;
+            }
+            runOnUiThread(() -> {
+                ((TextView) findViewById(R.id.cipherText)).setText(Hex.encodeHexString(encryptionResult.getCipherText()));
+                ((TextView) findViewById(R.id.iv)).setText(Hex.encodeHexString(encryptionResult.getInitializationVector()));
+            });
+            setStatus("Data encrypted successfully");
+        });
+    }
+
+    public void onEncryptSymmetricallyWithPasswordClick(View view) {
+        CompletableFuture<EncryptionResult> future = new CompletableFuture<>();
+        try {
+            byte[] password = "Hello World!".getBytes(StandardCharsets.UTF_8);
+            byte[] salt = "?!?".getBytes(StandardCharsets.UTF_8);
+            int iterations = 1024;
+            byte[] bytesToEncrypt = ((TextView) findViewById(R.id.input)).getText().toString().getBytes(StandardCharsets.UTF_8);
+            try {
+                future.complete(crypto.encryptSymmetricallyWithPassword(password, salt, iterations, bytesToEncrypt));
+            } catch (Exception e) {
+                future.completeExceptionally(e);
             }
         } catch (Exception e) {
             future.completeExceptionally(e);
