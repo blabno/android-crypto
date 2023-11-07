@@ -25,6 +25,7 @@ import androidx.appcompat.widget.SwitchCompat;
 public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = MainActivity.class.getSimpleName();
+    private static final String ASYMMETRIC_ENCRYPTION_KEY = "asymmetric-encryption";
     private static final String SYMMETRIC_ENCRYPTION_KEY = "symmetric-encryption";
 
     private final AndroidCrypto crypto = new AndroidCrypto();
@@ -34,7 +35,8 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         updateVisibility();
-        updateAuthenticationRequiredText();
+        updateAsymmetricKeyRequiresAuthenticationText();
+        updateSymmetricKeyRequiresAuthenticationText();
         TextView status = findViewById(R.id.status);
         status.setOnLongClickListener(view -> {
             CharSequence text = ((TextView) view).getText();
@@ -58,13 +60,17 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    public void onAuthenticationRequiredClick(View view) {
-        updateAuthenticationRequiredText();
+    public void onSymmetricKeyRequiresAuthenticationClick(View view) {
+        updateSymmetricKeyRequiresAuthenticationText();
+    }
+
+    public void onAsymmetricKeyRequiresAuthenticationClick(View view) {
+        updateAsymmetricKeyRequiresAuthenticationText();
     }
 
     public void onCreateSymmetricKeyClick(View view) {
         try {
-            boolean authenticationRequired = ((SwitchCompat) findViewById(R.id.authenticationRequired)).isChecked();
+            boolean authenticationRequired = ((SwitchCompat) findViewById(R.id.symmetricKeyRequiresAuthentication)).isChecked();
             AndroidCrypto.AccessLevel accessLevel = authenticationRequired ? AndroidCrypto.AccessLevel.AUTHENTICATION_REQUIRED : AndroidCrypto.AccessLevel.ALWAYS;
             crypto.createSymmetricEncryptionKey(SYMMETRIC_ENCRYPTION_KEY, accessLevel, false);
             setStatus("Symmetric encryption key created successfully");
@@ -74,19 +80,31 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    public void onDecryptSymmetricallyClick(View view) {
+    public void onCreateAsymmetricKeyClick(View view) {
+        try {
+            boolean authenticationRequired = ((SwitchCompat) findViewById(R.id.asymmetricKeyRequiresAuthentication)).isChecked();
+            AndroidCrypto.AccessLevel accessLevel = authenticationRequired ? AndroidCrypto.AccessLevel.AUTHENTICATION_REQUIRED : AndroidCrypto.AccessLevel.ALWAYS;
+            crypto.createAsymmetricEncryptionKey(ASYMMETRIC_ENCRYPTION_KEY, accessLevel, false);
+            setStatus("Asymmetric encryption key created successfully");
+            updateVisibility();
+        } catch (Exception e) {
+            handleError(e);
+        }
+    }
+
+    public void onDecryptAsymmetricallyClick(View view) {
         CompletableFuture<byte[]> future = new CompletableFuture<>();
         try {
             byte[] cipherText = Hex.decodeHex(((TextView) findViewById(R.id.cipherText)).getText().toString());
-            byte[] iv = Hex.decodeHex(((TextView) findViewById(R.id.iv)).getText().toString());
-            if (!crypto.getKeyInfo(SYMMETRIC_ENCRYPTION_KEY).isUserAuthenticationRequired()) {
+            String alias = ASYMMETRIC_ENCRYPTION_KEY;
+            if (!crypto.getKeyInfo(alias).isUserAuthenticationRequired()) {
                 try {
-                    future.complete(crypto.decrypt(SYMMETRIC_ENCRYPTION_KEY, cipherText, iv));
+                    future.complete(crypto.decryptAsymmetrically(alias, cipherText));
                 } catch (Exception e) {
                     future.completeExceptionally(e);
                 }
             } else {
-                crypto.decrypt(this, SYMMETRIC_ENCRYPTION_KEY, cipherText, iv)
+                crypto.decryptAsymmetrically(this, alias, cipherText)
                         .whenComplete((encryptionResult, throwable) -> {
                             if (null != throwable) {
                                 future.completeExceptionally(throwable);
@@ -106,18 +124,66 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    public void onEncryptSymmetricallyClick(View view) {
-        CompletableFuture<EncryptionResult> future = new CompletableFuture<>();
+    public void onDecryptSymmetricallyClick(View view) {
+        CompletableFuture<byte[]> future = new CompletableFuture<>();
         try {
-            byte[] bytesToEncrypt = ((TextView) findViewById(R.id.input)).getText().toString().getBytes(StandardCharsets.UTF_8);
-            if (!crypto.getKeyInfo(SYMMETRIC_ENCRYPTION_KEY).isUserAuthenticationRequired()) {
+            byte[] cipherText = Hex.decodeHex(((TextView) findViewById(R.id.cipherText)).getText().toString());
+            byte[] iv = Hex.decodeHex(((TextView) findViewById(R.id.iv)).getText().toString());
+            String alias = SYMMETRIC_ENCRYPTION_KEY;
+            if (!crypto.getKeyInfo(alias).isUserAuthenticationRequired()) {
                 try {
-                    future.complete(crypto.encrypt(SYMMETRIC_ENCRYPTION_KEY, bytesToEncrypt));
+                    future.complete(crypto.decryptSymmetrically(alias, cipherText, iv));
                 } catch (Exception e) {
                     future.completeExceptionally(e);
                 }
             } else {
-                crypto.encrypt(this, SYMMETRIC_ENCRYPTION_KEY, bytesToEncrypt)
+                crypto.decryptSymmetrically(this, alias, cipherText, iv)
+                        .whenComplete((encryptionResult, throwable) -> {
+                            if (null != throwable) {
+                                future.completeExceptionally(throwable);
+                            } else future.complete(encryptionResult);
+                        });
+            }
+        } catch (Exception e) {
+            future.completeExceptionally(e);
+        }
+
+        future.whenComplete((decryptionResult, throwable) -> {
+            if (null != throwable) {
+                handleError(throwable);
+                return;
+            }
+            setStatus(String.format("Decryption result:\nHex: %s\nString: %s", Hex.encodeHexString(decryptionResult), new String(decryptionResult)));
+        });
+    }
+
+    public void onEncryptAsymmetricallyClick(View view) {
+        try {
+            byte[] bytesToEncrypt = ((TextView) findViewById(R.id.input)).getText().toString().getBytes(StandardCharsets.UTF_8);
+            byte[] cipherText = crypto.encryptAsymmetrically(ASYMMETRIC_ENCRYPTION_KEY, bytesToEncrypt);
+            runOnUiThread(() -> {
+                ((TextView) findViewById(R.id.cipherText)).setText(Hex.encodeHexString(cipherText));
+                ((TextView) findViewById(R.id.iv)).setText("");
+            });
+            setStatus("Data encrypted successfully");
+        } catch (Exception e) {
+            handleError(e);
+        }
+    }
+
+    public void onEncryptSymmetricallyClick(View view) {
+        CompletableFuture<EncryptionResult> future = new CompletableFuture<>();
+        try {
+            byte[] bytesToEncrypt = ((TextView) findViewById(R.id.input)).getText().toString().getBytes(StandardCharsets.UTF_8);
+            String alias = SYMMETRIC_ENCRYPTION_KEY;
+            if (!crypto.getKeyInfo(alias).isUserAuthenticationRequired()) {
+                try {
+                    future.complete(crypto.encryptSymmetrically(alias, bytesToEncrypt));
+                } catch (Exception e) {
+                    future.completeExceptionally(e);
+                }
+            } else {
+                crypto.encryptSymmetrically(this, alias, bytesToEncrypt)
                         .whenComplete((encryptionResult, throwable) -> {
                             if (null != throwable) {
                                 future.completeExceptionally(throwable);
@@ -141,6 +207,16 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    public void onRemoveAsymmetricKeyClick(View view) {
+        try {
+            crypto.deleteKey(ASYMMETRIC_ENCRYPTION_KEY);
+            setStatus("Key removed successfully");
+            updateVisibility();
+        } catch (Exception e) {
+            handleError(e);
+        }
+    }
+
     public void onRemoveSymmetricKeyClick(View view) {
         try {
             crypto.deleteKey(SYMMETRIC_ENCRYPTION_KEY);
@@ -152,18 +228,34 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void updateVisibility() {
-        findViewById(R.id.authenticationRequired).setVisibility(View.INVISIBLE);
+        findViewById(R.id.symmetricKeyRequiresAuthentication).setVisibility(View.INVISIBLE);
         findViewById(R.id.createSymmetricKeyButton).setVisibility(View.GONE);
         findViewById(R.id.decryptSymmetricallyButton).setVisibility(View.VISIBLE);
         findViewById(R.id.encryptSymmetricallyButton).setVisibility(View.VISIBLE);
         findViewById(R.id.removeSymmetricKeyButton).setVisibility(View.VISIBLE);
         try {
             if (!crypto.containsKey(SYMMETRIC_ENCRYPTION_KEY)) {
-                findViewById(R.id.authenticationRequired).setVisibility(View.VISIBLE);
+                findViewById(R.id.symmetricKeyRequiresAuthentication).setVisibility(View.VISIBLE);
                 findViewById(R.id.createSymmetricKeyButton).setVisibility(View.VISIBLE);
                 findViewById(R.id.decryptSymmetricallyButton).setVisibility(View.GONE);
                 findViewById(R.id.encryptSymmetricallyButton).setVisibility(View.GONE);
                 findViewById(R.id.removeSymmetricKeyButton).setVisibility(View.GONE);
+            }
+        } catch (KeyStoreException e) {
+            handleError(e);
+        }
+        findViewById(R.id.asymmetricKeyRequiresAuthentication).setVisibility(View.INVISIBLE);
+        findViewById(R.id.createAsymmetricKeyButton).setVisibility(View.GONE);
+        findViewById(R.id.decryptAsymmetricallyButton).setVisibility(View.VISIBLE);
+        findViewById(R.id.encryptAsymmetricallyButton).setVisibility(View.VISIBLE);
+        findViewById(R.id.removeAsymmetricKeyButton).setVisibility(View.VISIBLE);
+        try {
+            if (!crypto.containsKey(ASYMMETRIC_ENCRYPTION_KEY)) {
+                findViewById(R.id.asymmetricKeyRequiresAuthentication).setVisibility(View.VISIBLE);
+                findViewById(R.id.createAsymmetricKeyButton).setVisibility(View.VISIBLE);
+                findViewById(R.id.decryptAsymmetricallyButton).setVisibility(View.GONE);
+                findViewById(R.id.encryptAsymmetricallyButton).setVisibility(View.GONE);
+                findViewById(R.id.removeAsymmetricKeyButton).setVisibility(View.GONE);
             }
         } catch (KeyStoreException e) {
             handleError(e);
@@ -180,8 +272,14 @@ public class MainActivity extends AppCompatActivity {
         runOnUiThread(() -> ((TextView) findViewById(R.id.status)).setText(msg));
     }
 
-    private void updateAuthenticationRequiredText() {
-        SwitchCompat aSwitch = findViewById(R.id.authenticationRequired);
+    private void updateAsymmetricKeyRequiresAuthenticationText() {
+        SwitchCompat aSwitch = findViewById(R.id.asymmetricKeyRequiresAuthentication);
+        String text = aSwitch.isChecked() ? getString(R.string.accessLevel_authentication_required) : getString(R.string.accessLevel_always);
+        aSwitch.setText(text);
+    }
+
+    private void updateSymmetricKeyRequiresAuthenticationText() {
+        SwitchCompat aSwitch = findViewById(R.id.symmetricKeyRequiresAuthentication);
         String text = aSwitch.isChecked() ? getString(R.string.accessLevel_authentication_required) : getString(R.string.accessLevel_always);
         aSwitch.setText(text);
     }

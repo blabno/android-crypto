@@ -11,4 +11,8 @@
     <string name="ivLabel">Initialization vector</string>
     <string name="cipherTextLabel">Cipher text</string>
     <string name="decryptSymmetrically">Decrypt\nsymmetrically</string>
+    <string name="decryptAsymmetrically">Decrypt\nasymmetrically</string>
+    <string name="createAsymmetricEncryptionKey">Create asymmetric\nencryption key</string>
+    <string name="removeAsymmetricEncryptionKey">Remove asymmetric\nencryption key</string>
+    <string name="encryptAsymmetrically">Encrypt\nasymmetrically</string>
 </resources>

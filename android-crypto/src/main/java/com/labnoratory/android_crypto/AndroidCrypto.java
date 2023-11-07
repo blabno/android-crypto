@@ -101,7 +101,54 @@ public class AndroidCrypto {
         getKeyStore().deleteEntry(alias);
     }
 
-    public byte[] decrypt(String alias, byte[] cipherText, byte[] iv) throws UnrecoverableKeyException, KeyStoreException, NoSuchAlgorithmException, InvalidKeySpecException, NoSuchProviderException, InvalidAlgorithmParameterException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
+    public byte[] decryptAsymmetrically(String alias, byte[] cipherText) throws UnrecoverableKeyException, KeyStoreException, NoSuchAlgorithmException, InvalidKeySpecException, NoSuchProviderException, InvalidAlgorithmParameterException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
+        KeyInfo keyInfo = getKeyInfo(alias);
+        if (keyInfo.isUserAuthenticationRequired()) {
+            throw new IllegalStateException("Key requires user authentication");
+        }
+        Cipher cipher = initializeAsymmetricCipherForDecryption(alias);
+        return cipher.doFinal(cipherText);
+    }
+
+    public CompletableFuture<byte[]> decryptAsymmetrically(@NonNull Activity activity, @NonNull String alias, @NonNull byte[] cipherText) {
+        return decryptAsymmetrically(activity, alias, cipherText, Collections.emptyMap());
+    }
+
+    public CompletableFuture<byte[]> decryptAsymmetrically(@NonNull Activity activity, @NonNull String alias, @NonNull byte[] cipherText, @NonNull Map<String, Object> options) {
+        CompletableFuture<byte[]> future = new CompletableFuture<>();
+
+        try {
+            Cipher cipher = initializeAsymmetricCipherForDecryption(alias);
+
+            KeyInfo keyInfo = getKeyInfo(alias);
+            if (!keyInfo.isUserAuthenticationRequired()) {
+                byte[] result = cipher.doFinal(cipherText);
+                future.complete(result);
+                return future;
+            }
+
+            BiometricPrompt.CryptoObject cryptoObject = new BiometricPrompt.CryptoObject(cipher);
+            Authenticator.authenticate(activity, options, cryptoObject)
+                    .whenCompleteAsync((result, throwable) -> {
+                        if (null != throwable) {
+                            future.completeExceptionally(throwable);
+                            return;
+                        }
+                        try {
+                            Cipher blessedCipher = Objects.requireNonNull(result.getCipher());
+                            byte[] decryptionResult = blessedCipher.doFinal(cipherText);
+                            future.complete(decryptionResult);
+                        } catch (Exception e) {
+                            future.completeExceptionally(e);
+                        }
+                    });
+        } catch (Exception ex) {
+            future.completeExceptionally(ex);
+        }
+        return future;
+    }
+
+    public byte[] decryptSymmetrically(String alias, byte[] cipherText, byte[] iv) throws UnrecoverableKeyException, KeyStoreException, NoSuchAlgorithmException, InvalidKeySpecException, NoSuchProviderException, InvalidAlgorithmParameterException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
         KeyInfo keyInfo = getKeyInfo(alias);
         if (keyInfo.isUserAuthenticationRequired()) {
             throw new IllegalStateException("Key requires user authentication");
@@ -110,11 +157,11 @@ public class AndroidCrypto {
         return cipher.doFinal(cipherText);
     }
 
-    public CompletableFuture<byte[]> decrypt(@NonNull Activity activity, @NonNull String alias, @NonNull byte[] cipherText, @NonNull byte[] iv) {
-        return decrypt(activity,alias,cipherText,iv,Collections.emptyMap());
+    public CompletableFuture<byte[]> decryptSymmetrically(@NonNull Activity activity, @NonNull String alias, @NonNull byte[] cipherText, @NonNull byte[] iv) {
+        return decryptSymmetrically(activity, alias, cipherText, iv, Collections.emptyMap());
     }
 
-    public CompletableFuture<byte[]> decrypt(@NonNull Activity activity, @NonNull String alias, @NonNull byte[] cipherText, @NonNull byte[] iv, @NonNull Map<String, Object> options) {
+    public CompletableFuture<byte[]> decryptSymmetrically(@NonNull Activity activity, @NonNull String alias, @NonNull byte[] cipherText, @NonNull byte[] iv, @NonNull Map<String, Object> options) {
         CompletableFuture<byte[]> future = new CompletableFuture<>();
 
         try {
@@ -148,7 +195,16 @@ public class AndroidCrypto {
         return future;
     }
 
-    public EncryptionResult encrypt(@NonNull String alias, @NonNull byte[] bytesToEncrypt) throws UnrecoverableKeyException, NoSuchPaddingException, KeyStoreException, NoSuchAlgorithmException, InvalidKeyException, InvalidKeySpecException, NoSuchProviderException, IllegalBlockSizeException, BadPaddingException {
+    public byte[] encryptAsymmetrically(@NonNull String alias, @NonNull byte[] bytesToEncrypt) throws NoSuchPaddingException, KeyStoreException, NoSuchAlgorithmException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException {
+        return encryptAsymmetrically(getPublicKey(alias), bytesToEncrypt);
+    }
+
+    public byte[] encryptAsymmetrically(@NonNull PublicKey publicKey, @NonNull byte[] bytesToEncrypt) throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException {
+        Cipher cipher = initializeAsymmetricCipherForEncryption(publicKey);
+        return doEncrypt(bytesToEncrypt, cipher).getCipherText();
+    }
+
+    public EncryptionResult encryptSymmetrically(@NonNull String alias, @NonNull byte[] bytesToEncrypt) throws UnrecoverableKeyException, NoSuchPaddingException, KeyStoreException, NoSuchAlgorithmException, InvalidKeyException, InvalidKeySpecException, NoSuchProviderException, IllegalBlockSizeException, BadPaddingException {
 
         KeyInfo keyInfo = getKeyInfo(alias);
         if (keyInfo.isUserAuthenticationRequired()) {
@@ -158,11 +214,11 @@ public class AndroidCrypto {
         return doEncrypt(bytesToEncrypt, cipher);
     }
 
-    public CompletableFuture<EncryptionResult> encrypt(@NonNull Activity activity, @NonNull String alias, @NonNull byte[] bytesToEncrypt) {
-        return encrypt(activity, alias, bytesToEncrypt, Collections.emptyMap());
+    public CompletableFuture<EncryptionResult> encryptSymmetrically(@NonNull Activity activity, @NonNull String alias, @NonNull byte[] bytesToEncrypt) {
+        return encryptSymmetrically(activity, alias, bytesToEncrypt, Collections.emptyMap());
     }
 
-    public CompletableFuture<EncryptionResult> encrypt(@NonNull Activity activity, @NonNull String alias, @NonNull byte[] bytesToEncrypt, @NonNull Map<String, Object> options) {
+    public CompletableFuture<EncryptionResult> encryptSymmetrically(@NonNull Activity activity, @NonNull String alias, @NonNull byte[] bytesToEncrypt, @NonNull Map<String, Object> options) {
         CompletableFuture<EncryptionResult> future = new CompletableFuture<>();
 
         try {
