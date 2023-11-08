@@ -19,15 +19,38 @@ public class MainTabsFragment {
         return driver.findElements(AppiumBy.xpath("//*[contains(@resource-id,\":id/tabLayout\")]//android.widget.TextView"));
     }
 
-    /** @noinspection UnusedReturnValue*/
-    public MainTabsFragment clickSymmetricEncryption() {
-        getTabs().get(1).click();
+    /**
+     * @noinspection UnusedReturnValue
+     */
+    public MainTabsFragment clickAsymmetricEncryption() {
+        getTabs().get(2).click();
+        waitABit();
         return this;
     }
 
-    /** @noinspection UnusedReturnValue*/
+    /**
+     * @noinspection UnusedReturnValue
+     */
+    public MainTabsFragment clickSymmetricEncryption() {
+        getTabs().get(1).click();
+        waitABit();
+        return this;
+    }
+
+    /**
+     * @noinspection UnusedReturnValue
+     */
     public MainTabsFragment clickAuthentication() {
         getTabs().get(0).click();
+        waitABit();
         return this;
+    }
+
+    private void waitABit() {
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

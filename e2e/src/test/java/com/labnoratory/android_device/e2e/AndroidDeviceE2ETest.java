@@ -10,6 +10,7 @@ import java.net.URL;
 import io.appium.java_client.android.AndroidDriver;
 import io.appium.java_client.android.options.UiAutomator2Options;
 
+import static com.labnoratory.android_device.e2e.Random.randomString;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -56,18 +57,20 @@ public class AndroidDeviceE2ETest {
         SymmetricEncryptionFragment encryptionTab = new SymmetricEncryptionFragment(driver);
         assertThat(encryptionTab.getCipherText(), is(emptyString()));
         assertThat(encryptionTab.getIv(), is(emptyString()));
+        String input = randomString();
         encryptionTab
                 .assertStatus("")
                 .createKey()
                 .assertStatus("Encryption key created successfully")
-                .setInput("Bimbo")
+                .setInput(input)
                 .clickEncryptButton()
-                .assertStatus("Data encrypted successfully");
+                .assertStatus("Data encrypted successfully")
+                .setInput("");
         String cipherText = encryptionTab.getCipherText();
         String iv = encryptionTab.getIv();
         assertThat(cipherText, is(not(emptyString())));
         assertThat(iv, is(not(emptyString())));
-        encryptionTab.clickDecryptButton().assertStatus("Decryption result:\n.*\nString: Bimbo");
+        encryptionTab.clickDecryptButton().assertStatus(String.format("Decryption result:\n.*\nString: %s", input));
         encryptionTab.setInput("Turbo").clickEncryptButton().assertStatus("Data encrypted successfully");
         assertNotEquals(cipherText, encryptionTab.getCipherText());
         assertNotEquals(iv, encryptionTab.getIv());
@@ -76,6 +79,33 @@ public class AndroidDeviceE2ETest {
                 .createKey()
                 .clickDecryptButton()
                 .assertStatus("Failed to decrypt with symmetric key");
+    }
+
+    @Test
+    public void encryptAsymmetrically() {
+        clearAppData();
+        new MainTabsFragment(driver).clickAsymmetricEncryption();
+        AsymmetricEncryptionFragment encryptionTab = new AsymmetricEncryptionFragment(driver);
+        assertThat(encryptionTab.getCipherText(), is(emptyString()));
+        String input = randomString();
+        encryptionTab
+                .assertStatus("")
+                .createKey()
+                .assertStatus("Encryption key created successfully")
+                .setInput(input)
+                .clickEncryptButton()
+                .assertStatus("Data encrypted successfully")
+                .setInput("");
+        String cipherText = encryptionTab.getCipherText();
+        assertThat(cipherText, is(not(emptyString())));
+        encryptionTab.clickDecryptButton().assertStatus(String.format("Decryption result:\n.*\nString: %s", input));
+        encryptionTab.setInput("Turbo").clickEncryptButton().assertStatus("Data encrypted successfully");
+        assertNotEquals(cipherText, encryptionTab.getCipherText());
+
+        encryptionTab.removeKey()
+                .createKey()
+                .clickDecryptButton()
+                .assertStatus("Failed to decrypt with asymmetric key");
     }
 
     private static void clearAppData() {
