@@ -186,10 +186,14 @@ public class AndroidCrypto {
         return future;
     }
 
-    public byte[] decryptSymmetricallyWithPassword(@NonNull byte[] password, @NonNull byte[] salt, int iterations, @NonNull byte[] cipherText, @NonNull byte[] iv) throws IllegalBlockSizeException, BadPaddingException {
+    public byte[] decryptSymmetricallyWithPassword(@NonNull byte[] password, @NonNull byte[] salt, int iterations, @NonNull byte[] cipherText, @NonNull byte[] iv) {
         SecretKey secretKey = deriveSecretKey(password, salt, iterations);
-        Cipher cipher = initializeSymmetricCipherForDecryption(secretKey, iv);
-        return cipher.doFinal(cipherText);
+        try {
+            Cipher cipher = initializeSymmetricCipherForDecryption(secretKey, iv);
+            return cipher.doFinal(cipherText);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to decrypt with password");
+        }
     }
 
     public byte[] encryptAsymmetrically(@NonNull String alias, @NonNull byte[] bytesToEncrypt) throws KeyStoreException, KeyNotFoundException, WrongKeyTypeException {

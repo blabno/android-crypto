@@ -23,6 +23,10 @@ public class Random {
         return new LinkedList<>(result);
     }
 
+    public static int randomInt(int bound) {
+        return random.nextInt(bound);
+    }
+
     public static byte[] randomBytes(int length) {
         byte[] result = new byte[length];
         random.nextBytes(result);
