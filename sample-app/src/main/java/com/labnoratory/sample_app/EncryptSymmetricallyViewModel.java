@@ -2,6 +2,7 @@ package com.labnoratory.sample_app;
 
 import android.app.Activity;
 
+import com.labnoratory.android_crypto.AndroidAuthenticator;
 import com.labnoratory.android_crypto.AndroidCrypto;
 
 import org.apache.commons.codec.binary.Hex;
@@ -29,7 +30,7 @@ public class EncryptSymmetricallyViewModel extends AbstractEncryptViewModel {
     public void encrypt(Activity activity) {
         try {
             byte[] bytesToEncrypt = Optional.ofNullable(payload.getValue()).orElse("").getBytes(StandardCharsets.UTF_8);
-            crypto.encryptSymmetrically(activity, KEY_NAME, bytesToEncrypt)
+            crypto.encryptSymmetrically(KEY_NAME, bytesToEncrypt, new AndroidAuthenticator(activity))
                     .whenComplete((encryptionResult, throwable) -> {
                         if (null != throwable) {
                             handleError(TAG, status, throwable);
@@ -48,7 +49,7 @@ public class EncryptSymmetricallyViewModel extends AbstractEncryptViewModel {
         try {
             byte[] cipherTextBytes = getBytes(cipherText, "Cipher text is invalid");
             byte[] ivBytes = getBytes(iv, "Initialization vector is invalid");
-            crypto.decryptSymmetrically(activity, KEY_NAME, cipherTextBytes, ivBytes)
+            crypto.decryptSymmetrically(KEY_NAME, cipherTextBytes, ivBytes, new AndroidAuthenticator(activity))
                     .whenComplete((decryptionResult, throwable) -> {
                         if (null != throwable) {
                             handleError(TAG, status, throwable);

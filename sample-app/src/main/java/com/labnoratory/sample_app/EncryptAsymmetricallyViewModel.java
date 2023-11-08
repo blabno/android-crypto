@@ -2,6 +2,7 @@ package com.labnoratory.sample_app;
 
 import android.app.Activity;
 
+import com.labnoratory.android_crypto.AndroidAuthenticator;
 import com.labnoratory.android_crypto.AndroidCrypto;
 
 import org.apache.commons.codec.binary.Hex;
@@ -32,7 +33,7 @@ public class EncryptAsymmetricallyViewModel extends AbstractEncryptViewModel {
     public void decrypt(Activity activity) {
         try {
             byte[] cipherTextBytes = getBytes(cipherText, "Cipher text is invalid");
-            crypto.decryptAsymmetrically(activity, getKeyName(), cipherTextBytes)
+            crypto.decryptAsymmetrically(getKeyName(), cipherTextBytes, new AndroidAuthenticator(activity))
                     .whenComplete((decryptionResult, throwable) -> {
                         if (null != throwable) {
                             handleError(TAG, status, throwable);

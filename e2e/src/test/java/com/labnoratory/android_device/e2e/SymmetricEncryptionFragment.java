@@ -36,6 +36,10 @@ public class SymmetricEncryptionFragment {
         return driver.findElement(AppiumBy.id("iv"));
     }
 
+    public static WebElement getRemoveKeyButton(WebDriver driver) {
+        return driver.findElement(AppiumBy.id("removeKeyButton"));
+    }
+
     public static WebElement getStatusElement(WebDriver driver) {
         return driver.findElement(AppiumBy.id("status"));
     }
@@ -62,6 +66,12 @@ public class SymmetricEncryptionFragment {
         return this;
     }
 
+    /** @noinspection UnusedReturnValue*/
+    public SymmetricEncryptionFragment clickRemoveKeyButton() {
+        getRemoveKeyButton(driver).click();
+        return this;
+    }
+
     public SymmetricEncryptionFragment clickDecryptButton() {
         getDecryptButton(driver).click();
         return this;
@@ -75,6 +85,12 @@ public class SymmetricEncryptionFragment {
     public SymmetricEncryptionFragment createKey() {
         clickCreateKeyButton();
         assertStatus("Encryption key created successfully");
+        return this;
+    }
+
+    public SymmetricEncryptionFragment removeKey() {
+        clickRemoveKeyButton();
+        assertStatus("Key removed successfully");
         return this;
     }
 

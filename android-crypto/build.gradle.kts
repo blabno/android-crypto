@@ -56,4 +56,5 @@ dependencies {
     androidTestImplementation("androidx.test:runner:1.5.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
     androidTestImplementation("com.github.javafaker:javafaker:1.0.2")
+    androidTestImplementation("org.mockito:mockito-android:5.7.0")
 }

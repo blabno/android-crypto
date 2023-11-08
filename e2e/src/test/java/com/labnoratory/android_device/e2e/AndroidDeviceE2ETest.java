@@ -71,6 +71,11 @@ public class AndroidDeviceE2ETest {
         encryptionTab.setInput("Turbo").clickEncryptButton().assertStatus("Data encrypted successfully");
         assertNotEquals(cipherText, encryptionTab.getCipherText());
         assertNotEquals(iv, encryptionTab.getIv());
+
+        encryptionTab.removeKey()
+                .createKey()
+                .clickDecryptButton()
+                .assertStatus("Failed to decrypt with symmetric key");
     }
 
     private static void clearAppData() {

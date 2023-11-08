@@ -2,7 +2,7 @@ package com.labnoratory.sample_app;
 
 import android.app.Activity;
 
-import com.labnoratory.android_crypto.Authenticator;
+import com.labnoratory.android_crypto.AndroidAuthenticator;
 
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
@@ -20,7 +20,7 @@ public class AuthenticateViewModel extends ViewModel {
     }
 
     public void authenticate(Activity activity) {
-        Authenticator.authenticate(activity).whenComplete((cryptoObject, throwable) -> {
+        new AndroidAuthenticator(activity).authenticate(null).whenComplete((cryptoObject, throwable) -> {
             if (null != throwable) {
                 handleError(TAG, status, throwable);
                 return;

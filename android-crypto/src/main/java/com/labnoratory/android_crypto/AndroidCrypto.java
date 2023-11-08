@@ -1,6 +1,5 @@
 package com.labnoratory.android_crypto;
 
-import android.app.Activity;
 import android.os.Build;
 import android.security.keystore.KeyGenParameterSpec;
 import android.security.keystore.KeyInfo;
@@ -35,8 +34,6 @@ import java.security.spec.ECGenParameterSpec;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.MGF1ParameterSpec;
 import java.security.spec.RSAKeyGenParameterSpec;
-import java.util.Collections;
-import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 
@@ -52,6 +49,7 @@ import javax.crypto.spec.OAEPParameterSpec;
 import javax.crypto.spec.PSource;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.biometric.BiometricPrompt;
 
 public class AndroidCrypto {
@@ -74,21 +72,21 @@ public class AndroidCrypto {
         return getKeyStore().containsAlias(alias);
     }
 
-    public PublicKey createAsymmetricEncryptionKey(@NonNull String alias, @NonNull AccessLevel accessLevel, boolean invalidateOnNewBiometry) throws NoSuchAlgorithmException, NoSuchProviderException, InvalidAlgorithmParameterException {
+    public PublicKey createAsymmetricEncryptionKey(@NonNull String alias, @NonNull AccessLevel accessLevel, boolean invalidateOnNewBiometry) throws NoSuchAlgorithmException, NoSuchProviderException, InvalidAlgorithmParameterException, AliasConflictException {
         checkIfKeyExists(alias);
         KeyGenParameterSpec keyGenParameterSpec = getAsymmetricEncryptionKeyBuilder(alias, accessLevel, invalidateOnNewBiometry).build();
         String algorithm = KeyProperties.KEY_ALGORITHM_RSA;
         return generateKeyPair(keyGenParameterSpec, algorithm).getPublic();
     }
 
-    public PublicKey createSigningKey(@NonNull String alias, @NonNull AccessLevel accessLevel, boolean invalidateOnNewBiometry) throws NoSuchAlgorithmException, NoSuchProviderException, InvalidAlgorithmParameterException {
+    public PublicKey createSigningKey(@NonNull String alias, @NonNull AccessLevel accessLevel, boolean invalidateOnNewBiometry) throws NoSuchAlgorithmException, NoSuchProviderException, InvalidAlgorithmParameterException, AliasConflictException {
         checkIfKeyExists(alias);
         KeyGenParameterSpec keyGenParameterSpec = getSigningKeyBuilder(alias, accessLevel, invalidateOnNewBiometry).build();
         String algorithm = KeyProperties.KEY_ALGORITHM_EC;
         return generateKeyPair(keyGenParameterSpec, algorithm).getPublic();
     }
 
-    public SecretKey createSymmetricEncryptionKey(@NonNull String alias, @NonNull AccessLevel accessLevel, boolean invalidateOnNewBiometry) throws NoSuchAlgorithmException, NoSuchProviderException, InvalidAlgorithmParameterException {
+    public SecretKey createSymmetricEncryptionKey(@NonNull String alias, @NonNull AccessLevel accessLevel, boolean invalidateOnNewBiometry) throws NoSuchAlgorithmException, NoSuchProviderException, InvalidAlgorithmParameterException, AliasConflictException {
         checkIfKeyExists(alias);
         KeyGenParameterSpec keyGenParameterSpec = getSymmetricEncryptionKeyBuilder(alias, accessLevel, invalidateOnNewBiometry).build();
         String algorithm = KeyProperties.KEY_ALGORITHM_AES;
@@ -101,22 +99,13 @@ public class AndroidCrypto {
         getKeyStore().deleteEntry(alias);
     }
 
-    public byte[] decryptAsymmetrically(@NonNull String alias, @NonNull byte[] cipherText) throws UnrecoverableKeyException, KeyStoreException, NoSuchAlgorithmException, InvalidKeySpecException, NoSuchProviderException, InvalidAlgorithmParameterException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
-        KeyInfo keyInfo = getKeyInfo(alias);
-        if (keyInfo.isUserAuthenticationRequired()) {
-            throw new IllegalStateException("Key requires user authentication");
-        }
-        Cipher cipher = initializeAsymmetricCipherForDecryption(alias);
-        return cipher.doFinal(cipherText);
+    public CompletableFuture<byte[]> decryptAsymmetrically(@NonNull String alias, @NonNull byte[] cipherText) {
+        return decryptAsymmetrically(alias, cipherText, null);
     }
 
-    public CompletableFuture<byte[]> decryptAsymmetrically(@NonNull Activity activity, @NonNull String alias, @NonNull byte[] cipherText) {
-        return decryptAsymmetrically(activity, alias, cipherText, Collections.emptyMap());
-    }
-
-    public CompletableFuture<byte[]> decryptAsymmetrically(@NonNull Activity activity, @NonNull String alias, @NonNull byte[] cipherText, @NonNull Map<String, Object> options) {
+    public CompletableFuture<byte[]> decryptAsymmetrically(@NonNull String alias, @NonNull byte[] cipherText, @Nullable Authenticator authenticator) {
         CompletableFuture<byte[]> future = new CompletableFuture<>();
-
+        String exceptionMessage = "Failed to decrypt with asymmetric key";
         try {
             Cipher cipher = initializeAsymmetricCipherForDecryption(alias);
 
@@ -125,13 +114,15 @@ public class AndroidCrypto {
                 byte[] result = cipher.doFinal(cipherText);
                 future.complete(result);
                 return future;
+            } else if (null == authenticator) {
+                throw keyUserNotAuthenticated();
             }
 
             BiometricPrompt.CryptoObject cryptoObject = new BiometricPrompt.CryptoObject(cipher);
-            Authenticator.authenticate(activity, options, cryptoObject)
+            authenticator.authenticate(cryptoObject)
                     .whenCompleteAsync((result, throwable) -> {
                         if (null != throwable) {
-                            future.completeExceptionally(throwable);
+                            future.completeExceptionally(wrapException(exceptionMessage, throwable));
                             return;
                         }
                         try {
@@ -139,30 +130,26 @@ public class AndroidCrypto {
                             byte[] decryptionResult = blessedCipher.doFinal(cipherText);
                             future.complete(decryptionResult);
                         } catch (Exception e) {
-                            future.completeExceptionally(e);
+                            future.completeExceptionally(wrapException(exceptionMessage, e));
                         }
                     });
-        } catch (Exception ex) {
+        } catch (KeyNotFoundException | WrongKeyTypeException | KeyUserNotAuthenticated ex) {
             future.completeExceptionally(ex);
+        } catch (RuntimeException | NoSuchAlgorithmException | NoSuchPaddingException |
+                 InvalidAlgorithmParameterException | InvalidKeyException | BadPaddingException |
+                 IllegalBlockSizeException e) {
+            future.completeExceptionally(wrapException(exceptionMessage, e));
         }
         return future;
     }
 
-    public byte[] decryptSymmetrically(@NonNull String alias, @NonNull byte[] cipherText, @NonNull byte[] iv) throws UnrecoverableKeyException, KeyStoreException, NoSuchAlgorithmException, InvalidKeySpecException, NoSuchProviderException, InvalidAlgorithmParameterException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
-        KeyInfo keyInfo = getKeyInfo(alias);
-        if (keyInfo.isUserAuthenticationRequired()) {
-            throw new IllegalStateException("Key requires user authentication");
-        }
-        Cipher cipher = initializeSymmetricCipherForDecryption(alias, iv);
-        return cipher.doFinal(cipherText);
+    public CompletableFuture<byte[]> decryptSymmetrically(@NonNull String alias, @NonNull byte[] cipherText, @NonNull byte[] iv) {
+        return decryptSymmetrically(alias, cipherText, iv, null);
     }
 
-    public CompletableFuture<byte[]> decryptSymmetrically(@NonNull Activity activity, @NonNull String alias, @NonNull byte[] cipherText, @NonNull byte[] iv) {
-        return decryptSymmetrically(activity, alias, cipherText, iv, Collections.emptyMap());
-    }
-
-    public CompletableFuture<byte[]> decryptSymmetrically(@NonNull Activity activity, @NonNull String alias, @NonNull byte[] cipherText, @NonNull byte[] iv, @NonNull Map<String, Object> options) {
+    public CompletableFuture<byte[]> decryptSymmetrically(@NonNull String alias, @NonNull byte[] cipherText, @NonNull byte[] iv, @Nullable Authenticator authenticator) {
         CompletableFuture<byte[]> future = new CompletableFuture<>();
+        String exceptionMessage = "Failed to decrypt with symmetric key";
 
         try {
             Cipher cipher = initializeSymmetricCipherForDecryption(alias, iv);
@@ -172,13 +159,15 @@ public class AndroidCrypto {
                 byte[] result = cipher.doFinal(cipherText);
                 future.complete(result);
                 return future;
+            } else if (null == authenticator) {
+                throw keyUserNotAuthenticated();
             }
 
             BiometricPrompt.CryptoObject cryptoObject = new BiometricPrompt.CryptoObject(cipher);
-            Authenticator.authenticate(activity, options, cryptoObject)
+            authenticator.authenticate(cryptoObject)
                     .whenCompleteAsync((result, throwable) -> {
                         if (null != throwable) {
-                            future.completeExceptionally(throwable);
+                            future.completeExceptionally(wrapException(exceptionMessage, throwable));
                             return;
                         }
                         try {
@@ -186,46 +175,46 @@ public class AndroidCrypto {
                             byte[] decryptionResult = blessedCipher.doFinal(cipherText);
                             future.complete(decryptionResult);
                         } catch (Exception e) {
-                            future.completeExceptionally(e);
+                            future.completeExceptionally(wrapException(exceptionMessage, e));
                         }
                     });
-        } catch (Exception ex) {
+        } catch (KeyNotFoundException | WrongKeyTypeException | KeyUserNotAuthenticated ex) {
             future.completeExceptionally(ex);
+        } catch (BadPaddingException | IllegalBlockSizeException ex) {
+            future.completeExceptionally(wrapException(exceptionMessage, ex));
         }
         return future;
     }
 
-    public byte[] decryptSymmetricallyWithPassword(@NonNull byte[] password, @NonNull byte[] salt, int iterations, @NonNull byte[] cipherText, @NonNull byte[] iv) throws NoSuchAlgorithmException, InvalidAlgorithmParameterException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
+    public byte[] decryptSymmetricallyWithPassword(@NonNull byte[] password, @NonNull byte[] salt, int iterations, @NonNull byte[] cipherText, @NonNull byte[] iv) throws IllegalBlockSizeException, BadPaddingException {
         SecretKey secretKey = deriveSecretKey(password, salt, iterations);
         Cipher cipher = initializeSymmetricCipherForDecryption(secretKey, iv);
         return cipher.doFinal(cipherText);
     }
 
-    public byte[] encryptAsymmetrically(@NonNull String alias, @NonNull byte[] bytesToEncrypt) throws NoSuchPaddingException, KeyStoreException, NoSuchAlgorithmException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException {
-        return encryptAsymmetrically(getPublicKey(alias), bytesToEncrypt);
+    public byte[] encryptAsymmetrically(@NonNull String alias, @NonNull byte[] bytesToEncrypt) throws KeyStoreException, KeyNotFoundException, WrongKeyTypeException {
+        PublicKey publicKey = getPublicKey(alias);
+        return encryptAsymmetrically(publicKey, bytesToEncrypt);
     }
 
-    public byte[] encryptAsymmetrically(@NonNull PublicKey publicKey, @NonNull byte[] bytesToEncrypt) throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException {
-        Cipher cipher = initializeAsymmetricCipherForEncryption(publicKey);
-        return doEncrypt(bytesToEncrypt, cipher).getCipherText();
-    }
-
-    public EncryptionResult encryptSymmetrically(@NonNull String alias, @NonNull byte[] bytesToEncrypt) throws UnrecoverableKeyException, NoSuchPaddingException, KeyStoreException, NoSuchAlgorithmException, InvalidKeyException, InvalidKeySpecException, NoSuchProviderException, IllegalBlockSizeException, BadPaddingException {
-        KeyInfo keyInfo = getKeyInfo(alias);
-        if (keyInfo.isUserAuthenticationRequired()) {
-            throw new IllegalStateException("Key requires user authentication");
+    public byte[] encryptAsymmetrically(@NonNull PublicKey publicKey, @NonNull byte[] bytesToEncrypt) throws WrongKeyTypeException {
+        try {
+            Cipher cipher = initializeAsymmetricCipherForEncryption(publicKey);
+            return doEncrypt(bytesToEncrypt, cipher).getCipherText();
+        } catch (WrongKeyTypeException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to encrypt with asymmetric key", e);
         }
-        Cipher cipher = initializeSymmetricCipherForEncryption(alias);
-        return doEncrypt(bytesToEncrypt, cipher);
     }
 
-    public CompletableFuture<EncryptionResult> encryptSymmetrically(@NonNull Activity activity, @NonNull String alias, @NonNull byte[] bytesToEncrypt) {
-        return encryptSymmetrically(activity, alias, bytesToEncrypt, Collections.emptyMap());
+    public CompletableFuture<EncryptionResult> encryptSymmetrically(@NonNull String alias, @NonNull byte[] bytesToEncrypt) {
+        return encryptSymmetrically(alias, bytesToEncrypt, null);
     }
 
-    public CompletableFuture<EncryptionResult> encryptSymmetrically(@NonNull Activity activity, @NonNull String alias, @NonNull byte[] bytesToEncrypt, @NonNull Map<String, Object> options) {
+    public CompletableFuture<EncryptionResult> encryptSymmetrically(@NonNull String alias, @NonNull byte[] bytesToEncrypt, @Nullable Authenticator authenticator) {
         CompletableFuture<EncryptionResult> future = new CompletableFuture<>();
-
+        String exceptionMessage = "Failed to encrypt with symmetric key";
         try {
             Cipher cipher = initializeSymmetricCipherForEncryption(alias);
 
@@ -234,29 +223,33 @@ public class AndroidCrypto {
                 EncryptionResult result = doEncrypt(bytesToEncrypt, cipher);
                 future.complete(result);
                 return future;
+            } else if (null == authenticator) {
+                throw keyUserNotAuthenticated();
             }
 
             BiometricPrompt.CryptoObject cryptoObject = new BiometricPrompt.CryptoObject(cipher);
-            Authenticator.authenticate(activity, options, cryptoObject)
+            authenticator.authenticate(cryptoObject)
                     .whenCompleteAsync((result, throwable) -> {
                         if (null != throwable) {
-                            future.completeExceptionally(throwable);
+                            future.completeExceptionally(wrapException(exceptionMessage, throwable));
                             return;
                         }
                         try {
                             EncryptionResult encryptionResult = doEncrypt(bytesToEncrypt, Objects.requireNonNull(result.getCipher()));
                             future.complete(encryptionResult);
                         } catch (Exception e) {
-                            future.completeExceptionally(e);
+                            future.completeExceptionally(wrapException(exceptionMessage, e));
                         }
                     });
-        } catch (Exception ex) {
+        } catch (KeyNotFoundException | WrongKeyTypeException | KeyUserNotAuthenticated ex) {
             future.completeExceptionally(ex);
+        } catch (IllegalBlockSizeException | BadPaddingException e) {
+            future.completeExceptionally(wrapException(exceptionMessage, e));
         }
         return future;
     }
 
-    public EncryptionResult encryptSymmetricallyWithPassword(@NonNull byte[] password, @NonNull byte[] salt, int iterations, @NonNull byte[] bytesToEncrypt) throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
+    public EncryptionResult encryptSymmetricallyWithPassword(@NonNull byte[] password, @NonNull byte[] salt, int iterations, @NonNull byte[] bytesToEncrypt) throws IllegalBlockSizeException, BadPaddingException {
         SecretKey secretKey = deriveSecretKey(password, salt, iterations);
         Cipher cipher = initializeSymmetricCipherForEncryption(secretKey);
         return doEncrypt(bytesToEncrypt, cipher);
@@ -270,13 +263,17 @@ public class AndroidCrypto {
         return new BCPBEKey(SECRET_KEY_DERIVATION_ALGORITHM, cipherParameters);
     }
 
-    public KeyInfo getKeyInfo(@NonNull String alias) throws UnrecoverableKeyException, KeyStoreException, NoSuchAlgorithmException, NoSuchProviderException, InvalidKeySpecException {
+    public KeyInfo getKeyInfo(@NonNull String alias) throws KeyNotFoundException {
         Key key = getKey(alias);
-        if (key instanceof SecretKey) {
-            return getKeyInfo((SecretKey) key);
-        } else {
-            KeyFactory factory = KeyFactory.getInstance(key.getAlgorithm(), KEY_STORE);
-            return factory.getKeySpec(key, KeyInfo.class);
+        try {
+            if (key instanceof SecretKey) {
+                return getKeyInfo((SecretKey) key);
+            } else {
+                KeyFactory factory = KeyFactory.getInstance(key.getAlgorithm(), KEY_STORE);
+                return factory.getKeySpec(key, KeyInfo.class);
+            }
+        } catch (NoSuchAlgorithmException | NoSuchProviderException | InvalidKeySpecException e) {
+            throw new RuntimeException("Failed to get key info for " + alias, e);
         }
     }
 
@@ -286,7 +283,7 @@ public class AndroidCrypto {
     }
 
     @NonNull
-    public PublicKey getPublicKey(@NonNull String alias) throws KeyStoreException {
+    public PublicKey getPublicKey(@NonNull String alias) throws KeyStoreException, KeyNotFoundException {
         Certificate certificate = getKeyStore().getCertificate(alias);
         if (null == certificate) {
             throw keyNotFound(alias);
@@ -294,36 +291,45 @@ public class AndroidCrypto {
         return certificate.getPublicKey();
     }
 
-    public Signature initializeSignatureForSigning(@NonNull String alias) throws UnrecoverableKeyException, KeyStoreException, NoSuchAlgorithmException, InvalidKeyException {
+    public Signature initializeSignatureForSigning(@NonNull String alias) throws NoSuchAlgorithmException, InvalidKeyException, KeyNotFoundException, WrongKeyTypeException {
         PrivateKey privateKey = getSigningPrivateKey(alias);
         Signature signature = Signature.getInstance(SIGNATURE_ALGORITHM);
         signature.initSign(privateKey);
         return signature;
     }
 
-    public Cipher initializeSymmetricCipherForEncryption(@NonNull SecretKey secretKey) throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidKeyException {
-        Cipher cipher = Cipher.getInstance(AES_ALGORITHM);
-        cipher.init(Cipher.ENCRYPT_MODE, secretKey);
-        return cipher;
+    public Cipher initializeSymmetricCipherForEncryption(@NonNull SecretKey secretKey) {
+        try {
+            Cipher cipher = Cipher.getInstance(AES_ALGORITHM);
+            cipher.init(Cipher.ENCRYPT_MODE, secretKey);
+            return cipher;
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to initialize symmetric cipher for encryption");
+        }
     }
 
-    public Cipher initializeSymmetricCipherForEncryption(@NonNull String alias) throws UnrecoverableKeyException, KeyStoreException, NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException {
+    public Cipher initializeSymmetricCipherForEncryption(@NonNull String alias) throws KeyNotFoundException, WrongKeyTypeException {
         SecretKey secretKey = getSecretKey(alias);
         return initializeSymmetricCipherForEncryption(secretKey);
     }
 
-    public Cipher initializeSymmetricCipherForDecryption(@NonNull String alias, @NonNull byte[] iv) throws UnrecoverableKeyException, KeyStoreException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, NoSuchPaddingException, InvalidKeyException {
+    public Cipher initializeSymmetricCipherForDecryption(@NonNull String alias, @NonNull byte[] iv) throws KeyNotFoundException, WrongKeyTypeException {
         return initializeSymmetricCipherForDecryption(getSecretKey(alias), iv);
     }
 
-    public Cipher initializeSymmetricCipherForDecryption(@NonNull SecretKey secretKey, @NonNull byte[] iv) throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, InvalidKeyException {
-        Cipher cipher = Cipher.getInstance(AES_ALGORITHM);
-        GCMParameterSpec spec = new GCMParameterSpec(128, iv);
-        cipher.init(Cipher.DECRYPT_MODE, secretKey, spec);
-        return cipher;
+    public Cipher initializeSymmetricCipherForDecryption(@NonNull SecretKey secretKey, @NonNull byte[] iv) {
+        try {
+            Cipher cipher = Cipher.getInstance(AES_ALGORITHM);
+            GCMParameterSpec spec = new GCMParameterSpec(128, iv);
+            cipher.init(Cipher.DECRYPT_MODE, secretKey, spec);
+            return cipher;
+        } catch (NoSuchAlgorithmException | NoSuchPaddingException |
+                 InvalidAlgorithmParameterException | InvalidKeyException e) {
+            throw new RuntimeException("Failed to initialize symmetric cipher for decryption", e);
+        }
     }
 
-    public Cipher initializeAsymmetricCipherForEncryption(@NonNull PublicKey publicKey) throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, InvalidKeyException {
+    public Cipher initializeAsymmetricCipherForEncryption(@NonNull PublicKey publicKey) throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, InvalidKeyException, WrongKeyTypeException {
         checkKeyAlgorithm(publicKey, RSA_KEY_ALGORITHM);
         OAEPParameterSpec sp = getOAEPParameterSpec();
         Cipher cipher = Cipher.getInstance(RSA_ALGORITHM);
@@ -331,7 +337,7 @@ public class AndroidCrypto {
         return cipher;
     }
 
-    public Cipher initializeAsymmetricCipherForDecryption(@NonNull String alias) throws UnrecoverableKeyException, KeyStoreException, NoSuchAlgorithmException, NoSuchPaddingException, InvalidAlgorithmParameterException, InvalidKeyException {
+    public Cipher initializeAsymmetricCipherForDecryption(@NonNull String alias) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidAlgorithmParameterException, InvalidKeyException, KeyNotFoundException, WrongKeyTypeException {
         PrivateKey privateKey = getAsymmetricEncryptionPrivateKey(alias);
         OAEPParameterSpec spec = getOAEPParameterSpec();
         Cipher cipher = Cipher.getInstance(RSA_ALGORITHM);
@@ -344,12 +350,12 @@ public class AndroidCrypto {
         return signature.sign();
     }
 
-    public boolean verifySignature(@NonNull String alias, @NonNull byte[] content, @NonNull byte[] signature) throws KeyStoreException, NoSuchAlgorithmException, InvalidKeyException, SignatureException {
+    public boolean verifySignature(@NonNull String alias, @NonNull byte[] content, @NonNull byte[] signature) throws KeyStoreException, NoSuchAlgorithmException, InvalidKeyException, SignatureException, KeyNotFoundException, WrongKeyTypeException {
         PublicKey publicKey = getPublicKey(alias);
         return verifySignature(publicKey, content, signature);
     }
 
-    public boolean verifySignature(@NonNull PublicKey publicKey, @NonNull byte[] content, @NonNull byte[] signature) throws NoSuchAlgorithmException, InvalidKeyException, SignatureException {
+    public boolean verifySignature(@NonNull PublicKey publicKey, @NonNull byte[] content, @NonNull byte[] signature) throws NoSuchAlgorithmException, InvalidKeyException, SignatureException, WrongKeyTypeException {
         checkKeyAlgorithm(publicKey, EC_KEY_ALGORITHM);
         Signature verifier = Signature.getInstance(SIGNATURE_ALGORITHM);
         verifier.initVerify(publicKey);
@@ -433,27 +439,31 @@ public class AndroidCrypto {
         return new OAEPParameterSpec("SHA-256", "MGF1", MGF1ParameterSpec.SHA1, PSource.PSpecified.DEFAULT);
     }
 
-    protected static Key getKey(String alias) throws UnrecoverableKeyException, KeyStoreException, NoSuchAlgorithmException {
-        Key key = getKeyStore().getKey(alias, null);
-        if (null == key) {
-            throw keyNotFound(alias);
+    protected static Key getKey(String alias) throws KeyNotFoundException {
+        try {
+            Key key = getKeyStore().getKey(alias, null);
+            if (null == key) {
+                throw keyNotFound(alias);
+            }
+            return key;
+        } catch (KeyStoreException | NoSuchAlgorithmException | UnrecoverableKeyException e) {
+            throw new RuntimeException("Failed to get key from keystore", e);
         }
-        return key;
     }
 
-    protected static PrivateKey getAsymmetricEncryptionPrivateKey(String alias) throws UnrecoverableKeyException, KeyStoreException, NoSuchAlgorithmException {
+    protected static PrivateKey getAsymmetricEncryptionPrivateKey(String alias) throws KeyNotFoundException, WrongKeyTypeException {
         Key key = getKey(alias);
         checkKeyAlgorithm(key, RSA_KEY_ALGORITHM);
         return (PrivateKey) key;
     }
 
-    protected static PrivateKey getSigningPrivateKey(String alias) throws UnrecoverableKeyException, KeyStoreException, NoSuchAlgorithmException {
+    protected static PrivateKey getSigningPrivateKey(String alias) throws KeyNotFoundException, WrongKeyTypeException {
         Key key = getKey(alias);
         checkKeyAlgorithm(key, EC_KEY_ALGORITHM);
         return (PrivateKey) key;
     }
 
-    protected static SecretKey getSecretKey(String alias) throws UnrecoverableKeyException, KeyStoreException, NoSuchAlgorithmException {
+    protected static SecretKey getSecretKey(String alias) throws KeyNotFoundException, WrongKeyTypeException {
         Key key = getKey(alias);
         if (!(key instanceof SecretKey)) {
             throw new WrongKeyTypeException(String.format("Key %s is not a SecretKey", alias));
@@ -461,19 +471,19 @@ public class AndroidCrypto {
         return (SecretKey) key;
     }
 
-    private static void checkIfKeyExists(String alias) throws NoSuchAlgorithmException {
+    private static void checkIfKeyExists(String alias) throws AliasConflictException {
         try {
             Key key = getKeyStore().getKey(alias, null);
             if (null != key) {
                 throw new AliasConflictException();
             }
-        } catch (KeyStoreException e) {
-            throw new RuntimeException(e);
+        } catch (KeyStoreException | NoSuchAlgorithmException e) {
+            throw new RuntimeException("Failed to check if ke exists in the key store", e);
         } catch (UnrecoverableKeyException ignore) {
         }
     }
 
-    private static void checkKeyAlgorithm(Key key, String expectedAlgorithm) {
+    private static void checkKeyAlgorithm(Key key, String expectedAlgorithm) throws WrongKeyTypeException {
         String actualAlgorithm = key.getAlgorithm();
         if (!expectedAlgorithm.equals(actualAlgorithm)) {
             throw new WrongKeyTypeException(String.format("Expected key algorithm %s, actual %s", expectedAlgorithm, actualAlgorithm));
@@ -488,6 +498,14 @@ public class AndroidCrypto {
 
     private static KeyNotFoundException keyNotFound(String alias) {
         return new KeyNotFoundException("Key not found: " + alias);
+    }
+
+    private static KeyUserNotAuthenticated keyUserNotAuthenticated() {
+        return new KeyUserNotAuthenticated();
+    }
+
+    private static RuntimeException wrapException(String message, Throwable cause) {
+        return new RuntimeException(message, cause);
     }
 
     public enum AccessLevel {
