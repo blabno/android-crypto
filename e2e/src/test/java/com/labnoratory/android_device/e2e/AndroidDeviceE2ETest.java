@@ -3,12 +3,10 @@ package com.labnoratory.android_device.e2e;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.openqa.selenium.WebElement;
 
 import java.io.IOException;
 import java.net.URL;
 
-import io.appium.java_client.AppiumBy;
 import io.appium.java_client.android.AndroidDriver;
 import io.appium.java_client.android.options.UiAutomator2Options;
 
@@ -16,13 +14,13 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.emptyString;
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertTrue;
 
 public class AndroidDeviceE2ETest {
 
     private static AndroidDriver driver;
+
+    private static final String PACKAGE_NAME = "com.labnoratory.sample_app";
 
     @BeforeClass
     public static void beforeClass() throws Exception {
@@ -39,18 +37,16 @@ public class AndroidDeviceE2ETest {
 
     @Test
     public void authenticate() {
-        WebElement status = driver.findElement(AppiumBy.id("status"));
-        assertTrue(status.isDisplayed());
-        assertEquals("", status.getText());
-        WebElement button = driver.findElement(AppiumBy.id("authenticateButton"));
-        assertTrue(button.isDisplayed());
-        button.click();
+        new MainTabsFragment(driver).clickAuthentication();
+        AuthenticationFragment authenticationTab = new AuthenticationFragment(driver)
+                .assertStatus("")
+                .clickAuthenticateButton();
         sleep(1000);
         scanFinger(2);
         sleep(1000);
         scanFinger(1);
         sleep(1000);
-        assertEquals("Authentication successful", status.getText());
+        authenticationTab.assertStatus("Authentication successful");
     }
 
     @Test
@@ -78,7 +74,7 @@ public class AndroidDeviceE2ETest {
     }
 
     private static void clearAppData() {
-        adbShell("pm clear start com.labnoratory.sample_app");
+        adbShell("pm clear start " + PACKAGE_NAME);
     }
 
     private static void setupFingerprint() {
@@ -104,7 +100,7 @@ public class AndroidDeviceE2ETest {
         sleep(500);
         scanFinger(1);
         sleep(500);
-        adbShell("am start com.labnoratory.sample_app/.MainActivity");
+        adbShell(String.format("am start %s/.MainActivity", PACKAGE_NAME));
         sleep(1000);
     }
 

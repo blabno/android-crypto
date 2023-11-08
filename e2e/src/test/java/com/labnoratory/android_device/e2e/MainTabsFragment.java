@@ -24,4 +24,10 @@ public class MainTabsFragment {
         getTabs().get(1).click();
         return this;
     }
+
+    /** @noinspection UnusedReturnValue*/
+    public MainTabsFragment clickAuthentication() {
+        getTabs().get(0).click();
+        return this;
+    }
 }

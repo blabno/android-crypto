@@ -1,17 +1,12 @@
 package com.labnoratory.android_device.e2e;
 
-import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.support.ui.WebDriverWait;
-
-import java.time.Duration;
 
 import io.appium.java_client.AppiumBy;
 import io.appium.java_client.android.AndroidDriver;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.matchesPattern;
+import static com.labnoratory.android_device.e2e.FragmentHelper.assertText;
 
 public class SymmetricEncryptionFragment {
 
@@ -50,18 +45,7 @@ public class SymmetricEncryptionFragment {
     }
 
     public SymmetricEncryptionFragment assertStatus(String pattern) {
-        try {
-            new WebDriverWait(driver, Duration.ofSeconds(1))
-                    .until(webDriver -> {
-                        try {
-                            return getStatusElement(webDriver).getText().matches(pattern);
-                        } catch (Exception ignore) {
-                            return false;
-                        }
-                    });
-        } catch (TimeoutException ignore) {
-            assertThat(getStatusElement(driver).getText(), matchesPattern(pattern));
-        }
+        assertText(driver, SymmetricEncryptionFragment::getStatusElement, pattern);
         return this;
     }
 
