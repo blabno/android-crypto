@@ -10,7 +10,10 @@ Start Appium
 
 Start emulator
 
-    emulator -avd Nexus_6P_API_29
+    export AVD_NAME=AndroidDeviceE2E
+    avdmanager delete avd --name $AVD_NAME
+    avdmanager create avd --force --name $AVD_NAME --abi google_apis/x86 --package 'system-images;android-29;google_apis;x86' --device "Nexus 6P"
+    emulator -avd $AVD_NAME
 
 Run tests:
 
