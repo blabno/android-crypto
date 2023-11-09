@@ -40,6 +40,15 @@ public class MainTabsFragment {
     /**
      * @noinspection UnusedReturnValue
      */
+    public MainTabsFragment clickSymmetricEncryptionWithPassword() {
+        getTabs().get(3).click();
+        waitABit();
+        return this;
+    }
+
+    /**
+     * @noinspection UnusedReturnValue
+     */
     public MainTabsFragment clickAuthentication() {
         getTabs().get(0).click();
         waitABit();

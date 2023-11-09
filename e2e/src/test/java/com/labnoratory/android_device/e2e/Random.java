@@ -12,6 +12,10 @@ public class Random {
         return result;
     }
 
+    public static int randomInt(int bound) {
+        return random.nextInt(bound);
+    }
+
     public static String randomString() {
         return Hex.encodeHexString(randomBytes(10));
     }
