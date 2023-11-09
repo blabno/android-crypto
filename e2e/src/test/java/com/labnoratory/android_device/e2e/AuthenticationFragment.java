@@ -11,6 +11,7 @@ import static com.labnoratory.android_device.e2e.FragmentHelper.assertText;
 public class AuthenticationFragment {
 
     private final AndroidDriver driver;
+    private BiometricPromptFragment biometricPromptFragment;
 
     public static WebElement getAuthenticateButton(WebDriver driver) {
         return driver.findElement(AppiumBy.id("authenticateButton"));
@@ -29,9 +30,28 @@ public class AuthenticationFragment {
         return this;
     }
 
-    /** @noinspection UnusedReturnValue*/
+    /**
+     * @noinspection UnusedReturnValue
+     */
     public AuthenticationFragment clickAuthenticateButton() {
         getAuthenticateButton(driver).click();
         return this;
+    }
+
+    public AuthenticationFragment scanEnrolledFinger() {
+        getBiometricPromptFragment().scanEnrolledFinger();
+        return this;
+    }
+
+    public AuthenticationFragment scanUnknownFinger() {
+        getBiometricPromptFragment().scanUnknownFinger();
+        return this;
+    }
+
+    private BiometricPromptFragment getBiometricPromptFragment() {
+        if (null == biometricPromptFragment) {
+            biometricPromptFragment = new BiometricPromptFragment(driver);
+        }
+        return biometricPromptFragment;
     }
 }

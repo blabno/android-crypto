@@ -19,7 +19,7 @@ public class AbstractE2ETest {
         UiAutomator2Options options = new UiAutomator2Options()
                 .setApp("./sample-app/build/outputs/apk/debug/sample-app-debug.apk");
         driver = new AndroidDriver(new URL("http://127.0.0.1:4723"), options);
-        setupFingerprint();
+        setupFingerprint(driver);
     }
 
     @AfterClass

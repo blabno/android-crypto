@@ -1,8 +1,8 @@
 package com.labnoratory.android_device.e2e;
 
+import org.junit.Before;
 import org.junit.Test;
 
-import static com.labnoratory.android_device.e2e.E2EHelper.clearAppData;
 import static com.labnoratory.android_device.e2e.Random.randomString;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
@@ -12,13 +12,21 @@ import static org.junit.Assert.assertNotEquals;
 
 public class SymmetricEncryptionE2ETest extends AbstractE2ETest {
 
-    @Test
-    public void encryptSymmetrically() {
-        clearAppData();
+    @Before
+    public void setUp() {
         new MainTabsFragment(driver).clickSymmetricEncryption();
         SymmetricEncryptionFragment encryptionTab = new SymmetricEncryptionFragment(driver);
-        assertThat(encryptionTab.getCipherText(), is(emptyString()));
-        assertThat(encryptionTab.getIv(), is(emptyString()));
+        if (encryptionTab.isKeyAvailable()) {
+            encryptionTab.removeKey();
+        }
+        encryptionTab.setInput("")
+                .setCipherText("")
+                .setIv("");
+    }
+
+    @Test
+    public void encryptSymmetrically() {
+        SymmetricEncryptionFragment encryptionTab = new SymmetricEncryptionFragment(driver);
         String input = randomString();
         encryptionTab
                 .assertStatus("")

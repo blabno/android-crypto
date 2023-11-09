@@ -57,6 +57,31 @@ public class SymmetricEncryptionWithPasswordFragment {
         return this;
     }
 
+    public SymmetricEncryptionWithPasswordFragment clickDecryptButton() {
+        getDecryptButton(driver).click();
+        return this;
+    }
+
+    public SymmetricEncryptionWithPasswordFragment clickEncryptButton() {
+        getEncryptButton(driver).click();
+        return this;
+    }
+
+    public String getCipherText() {
+        return getCipherTextElement(driver).getText();
+    }
+
+    public String getIv() {
+        return getIvElement(driver).getText();
+    }
+
+    public SymmetricEncryptionWithPasswordFragment setCipherText(CharSequence... keysToSend) {
+        WebElement element = getCipherTextElement(driver);
+        element.clear();
+        element.sendKeys(keysToSend);
+        return this;
+    }
+
     public SymmetricEncryptionWithPasswordFragment setInput(CharSequence... keysToSend) {
         WebElement element = getInputElement(driver);
         element.clear();
@@ -66,6 +91,14 @@ public class SymmetricEncryptionWithPasswordFragment {
 
     public SymmetricEncryptionWithPasswordFragment setIterations(CharSequence... keysToSend) {
         WebElement element = getIterationsElement(driver);
+        element.clear();
+        element.sendKeys(keysToSend);
+        return this;
+    }
+
+    /** @noinspection UnusedReturnValue*/
+    public SymmetricEncryptionWithPasswordFragment setIv(CharSequence... keysToSend) {
+        WebElement element = getIvElement(driver);
         element.clear();
         element.sendKeys(keysToSend);
         return this;
@@ -83,23 +116,5 @@ public class SymmetricEncryptionWithPasswordFragment {
         element.clear();
         element.sendKeys(keysToSend);
         return this;
-    }
-
-    public SymmetricEncryptionWithPasswordFragment clickDecryptButton() {
-        getDecryptButton(driver).click();
-        return this;
-    }
-
-    public SymmetricEncryptionWithPasswordFragment clickEncryptButton() {
-        getEncryptButton(driver).click();
-        return this;
-    }
-
-    public String getCipherText() {
-        return getCipherTextElement(driver).getText();
-    }
-
-    public String getIv() {
-        return getIvElement(driver).getText();
     }
 }

@@ -1,38 +1,38 @@
 package com.labnoratory.android_device.e2e;
 
+import org.openqa.selenium.By;
+
 import java.io.IOException;
+
+import io.appium.java_client.android.AndroidDriver;
 
 public class E2EHelper {
 
     protected static final String PACKAGE_NAME = "com.labnoratory.sample_app";
 
-    public static void clearAppData() {
-        adbShell("pm clear start " + PACKAGE_NAME);
+    public static By byText(String text) {
+        return By.xpath(String.format("//*[@text=\"%s\"]", text));
     }
 
-    public static void setupFingerprint() {
-        adbShell("locksettings clear --old 1111");
+    public static void setupFingerprint(AndroidDriver driver) {
+        String pin = "1111";
+        adbShell("locksettings clear --old " + pin);
         sleep(500);
-        adbShell("locksettings set-pin 1111");
+        adbShell("locksettings set-pin " + pin);
         sleep(500);
-        adbShell("am start -a android.settings.SECURITY_SETTINGS");
-        sleep(500);
-        adbShell("input tap 274 1600");
-        sleep(500);
-        adbShell("input text 1111");
-        sleep(500);
-        adbShell("input keyevent 66");
-        sleep(500);
-        adbShell("input tap 1100 2200");
-        sleep(500);
-        for (int i = 0; i < 3; i++) {
-            scanFinger(1);
-            sleep(500);
+        SecuritySettingsFragment settingsFragment = new SecuritySettingsFragment(driver)
+                .open()
+                .clickFingerprintMenuItem()
+                .enterPIN(pin);
+        if(settingsFragment.hasFingersEnrolled()) {
+            settingsFragment.removeFingers()
+                    .clickAddFingerprintButton();
+        } else {
+                    settingsFragment.clickNext();
         }
-        scanEnrolledFinger();
-        sleep(500);
-        scanEnrolledFinger();
-        sleep(500);
+        settingsFragment
+                .scanFingerprint()
+                .clickDone();
         adbShell(String.format("am start %s/.MainActivity", PACKAGE_NAME));
         sleep(1000);
     }

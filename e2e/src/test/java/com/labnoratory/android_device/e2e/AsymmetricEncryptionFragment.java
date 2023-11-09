@@ -1,5 +1,6 @@
 package com.labnoratory.android_device.e2e;
 
+import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 
@@ -10,14 +11,22 @@ import static com.labnoratory.android_device.e2e.FragmentHelper.assertText;
 
 public class AsymmetricEncryptionFragment {
 
+    private static final By createKeyButtonSelector = AppiumBy.id("createKeyButton");
+    private static final By removeKeyButtonSelector = AppiumBy.id("removeKeyButton");
+
     private final AndroidDriver driver;
+    private BiometricPromptFragment biometricPromptFragment;
+
+    public static WebElement getAuthenticationRequired(WebDriver driver) {
+        return driver.findElement(AppiumBy.id("authenticationRequired"));
+    }
 
     public static WebElement getCipherTextElement(WebDriver driver) {
         return driver.findElement(AppiumBy.id("cipherText"));
     }
 
     public static WebElement getCreateKeyButton(WebDriver driver) {
-        return driver.findElement(AppiumBy.id("createKeyButton"));
+        return driver.findElement(createKeyButtonSelector);
     }
 
     public static WebElement getDecryptButton(WebDriver driver) {
@@ -33,7 +42,7 @@ public class AsymmetricEncryptionFragment {
     }
 
     public static WebElement getRemoveKeyButton(WebDriver driver) {
-        return driver.findElement(AppiumBy.id("removeKeyButton"));
+        return driver.findElement(removeKeyButtonSelector);
     }
 
     public static WebElement getStatusElement(WebDriver driver) {
@@ -49,20 +58,35 @@ public class AsymmetricEncryptionFragment {
         return this;
     }
 
-    public AsymmetricEncryptionFragment setInput(CharSequence... keysToSend) {
-        WebElement element = getInputElement(driver);
-        element.clear();
-        element.sendKeys(keysToSend);
+    public AsymmetricEncryptionFragment assureKeyDoesNotRequireAuthentication() {
+        WebElement authenticationRequired = getAuthenticationRequired(driver);
+        if (authenticationRequired.getText().matches(".*ON.*")) {
+            authenticationRequired.click();
+        }
+        assertText(driver, AsymmetricEncryptionFragment::getAuthenticationRequired, ".*OFF.*");
         return this;
     }
 
-    /** @noinspection UnusedReturnValue*/
+    public AsymmetricEncryptionFragment assureKeyRequiresAuthentication() {
+        WebElement authenticationRequired = getAuthenticationRequired(driver);
+        if (authenticationRequired.getText().matches(".*OFF.*")) {
+            authenticationRequired.click();
+        }
+        assertText(driver, AsymmetricEncryptionFragment::getAuthenticationRequired, ".*ON.*");
+        return this;
+    }
+
+    /**
+     * @noinspection UnusedReturnValue
+     */
     public AsymmetricEncryptionFragment clickCreateKeyButton() {
         getCreateKeyButton(driver).click();
         return this;
     }
 
-    /** @noinspection UnusedReturnValue*/
+    /**
+     * @noinspection UnusedReturnValue
+     */
     public AsymmetricEncryptionFragment clickRemoveKeyButton() {
         getRemoveKeyButton(driver).click();
         return this;
@@ -84,14 +108,44 @@ public class AsymmetricEncryptionFragment {
         return this;
     }
 
+    public String getCipherText() {
+        return getCipherTextElement(driver).getText();
+    }
+
+    public boolean isKeyAvailable() {
+        return !driver.findElements(removeKeyButtonSelector).isEmpty();
+    }
+
     public AsymmetricEncryptionFragment removeKey() {
         clickRemoveKeyButton();
         assertStatus("Key removed successfully");
         return this;
     }
 
-    public String getCipherText() {
-        return getCipherTextElement(driver).getText();
+    public AsymmetricEncryptionFragment scanEnrolledFinger() {
+        getBiometricPromptFragment().scanEnrolledFinger();
+        return this;
     }
 
+    /** @noinspection UnusedReturnValue*/
+    public AsymmetricEncryptionFragment setCipherText(CharSequence... keysToSend) {
+        WebElement element = getCipherTextElement(driver);
+        element.clear();
+        element.sendKeys(keysToSend);
+        return this;
+    }
+
+    public AsymmetricEncryptionFragment setInput(CharSequence... keysToSend) {
+        WebElement element = getInputElement(driver);
+        element.clear();
+        element.sendKeys(keysToSend);
+        return this;
+    }
+
+    private BiometricPromptFragment getBiometricPromptFragment() {
+        if (null == biometricPromptFragment) {
+            biometricPromptFragment = new BiometricPromptFragment(driver);
+        }
+        return biometricPromptFragment;
+    }
 }

@@ -13,8 +13,6 @@ import static com.labnoratory.sample_app.ViewModelUtil.handleError;
 
 public abstract class AbstractEncryptViewModel extends ViewModel {
 
-    private static final String TAG = AuthenticateViewModel.class.getSimpleName();
-
     protected final AndroidCrypto crypto = new AndroidCrypto();
 
     protected final MutableLiveData<Boolean> authenticationRequired = new MutableLiveData<>(false);
@@ -54,7 +52,7 @@ public abstract class AbstractEncryptViewModel extends ViewModel {
             status.postValue("Encryption key created successfully");
             checkKey();
         } catch (Exception e) {
-            handleError(TAG, status, e);
+            handleError(getTag(), status, e);
         }
     }
 
@@ -64,7 +62,7 @@ public abstract class AbstractEncryptViewModel extends ViewModel {
             status.postValue("Key removed successfully");
             checkKey();
         } catch (Exception e) {
-            handleError(TAG, status, e);
+            handleError(getTag(), status, e);
         }
     }
 
@@ -76,8 +74,12 @@ public abstract class AbstractEncryptViewModel extends ViewModel {
         try {
             keyExists.postValue(crypto.containsKey(getKeyName()));
         } catch (KeyStoreException e) {
-            Log.e(TAG, "Failed to check if key exists", e);
+            Log.e(getTag(), "Failed to check if key exists", e);
             keyExists.postValue(false);
         }
+    }
+
+    private String getTag() {
+        return getClass().getSimpleName();
     }
 }

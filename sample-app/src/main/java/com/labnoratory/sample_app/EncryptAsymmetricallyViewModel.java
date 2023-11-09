@@ -15,7 +15,7 @@ import static com.labnoratory.sample_app.ViewModelUtil.handleError;
 
 public class EncryptAsymmetricallyViewModel extends AbstractEncryptViewModel {
 
-    private static final String TAG = AuthenticateViewModel.class.getSimpleName();
+    private static final String TAG = EncryptAsymmetricallyViewModel.class.getSimpleName();
 
     private static final String KEY_NAME = KeyName.AsymmetricEncryption.name();
 

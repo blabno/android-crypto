@@ -17,7 +17,7 @@ import static com.labnoratory.sample_app.ViewModelUtil.handleError;
 
 public class EncryptSymmetricallyViewModel extends AbstractEncryptViewModel {
 
-    private static final String TAG = AuthenticateViewModel.class.getSimpleName();
+    private static final String TAG = EncryptSymmetricallyViewModel.class.getSimpleName();
 
     private static final String KEY_NAME = KeyName.SymmetricEncryption.name();
 
