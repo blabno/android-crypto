@@ -6,6 +6,7 @@ import org.openqa.selenium.WebElement;
 import io.appium.java_client.AppiumBy;
 import io.appium.java_client.android.AndroidDriver;
 
+import static com.labnoratory.android_device.e2e.E2EHelper.setText;
 import static com.labnoratory.android_device.e2e.FragmentHelper.assertText;
 
 public class SymmetricEncryptionWithPasswordFragment {
@@ -75,46 +76,34 @@ public class SymmetricEncryptionWithPasswordFragment {
         return getIvElement(driver).getText();
     }
 
-    public SymmetricEncryptionWithPasswordFragment setCipherText(CharSequence... keysToSend) {
-        WebElement element = getCipherTextElement(driver);
-        element.clear();
-        element.sendKeys(keysToSend);
+    public SymmetricEncryptionWithPasswordFragment setCipherText(CharSequence... text) {
+        setText(getCipherTextElement(driver), text);
         return this;
     }
 
-    public SymmetricEncryptionWithPasswordFragment setInput(CharSequence... keysToSend) {
-        WebElement element = getInputElement(driver);
-        element.clear();
-        element.sendKeys(keysToSend);
+    public SymmetricEncryptionWithPasswordFragment setInput(CharSequence... text) {
+        setText(getInputElement(driver), text);
         return this;
     }
 
-    public SymmetricEncryptionWithPasswordFragment setIterations(CharSequence... keysToSend) {
-        WebElement element = getIterationsElement(driver);
-        element.clear();
-        element.sendKeys(keysToSend);
+    public SymmetricEncryptionWithPasswordFragment setIterations(CharSequence... text) {
+        setText(getIterationsElement(driver), text);
         return this;
     }
 
     /** @noinspection UnusedReturnValue*/
-    public SymmetricEncryptionWithPasswordFragment setIv(CharSequence... keysToSend) {
-        WebElement element = getIvElement(driver);
-        element.clear();
-        element.sendKeys(keysToSend);
+    public SymmetricEncryptionWithPasswordFragment setIv(CharSequence... text) {
+        setText(getIvElement(driver), text);
         return this;
     }
 
-    public SymmetricEncryptionWithPasswordFragment setPassword(CharSequence... keysToSend) {
-        WebElement element = getPasswordElement(driver);
-        element.clear();
-        element.sendKeys(keysToSend);
+    public SymmetricEncryptionWithPasswordFragment setPassword(CharSequence... text) {
+        setText(getPasswordElement(driver), text);
         return this;
     }
 
-    public SymmetricEncryptionWithPasswordFragment setSalt(CharSequence... keysToSend) {
-        WebElement element = getSaltElement(driver);
-        element.clear();
-        element.sendKeys(keysToSend);
+    public SymmetricEncryptionWithPasswordFragment setSalt(CharSequence... text) {
+        setText(getSaltElement(driver), text);
         return this;
     }
 }

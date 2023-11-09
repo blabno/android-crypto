@@ -7,6 +7,7 @@ import org.openqa.selenium.WebElement;
 import io.appium.java_client.AppiumBy;
 import io.appium.java_client.android.AndroidDriver;
 
+import static com.labnoratory.android_device.e2e.E2EHelper.setText;
 import static com.labnoratory.android_device.e2e.FragmentHelper.assertText;
 
 public class AsymmetricEncryptionFragment {
@@ -128,17 +129,13 @@ public class AsymmetricEncryptionFragment {
     }
 
     /** @noinspection UnusedReturnValue*/
-    public AsymmetricEncryptionFragment setCipherText(CharSequence... keysToSend) {
-        WebElement element = getCipherTextElement(driver);
-        element.clear();
-        element.sendKeys(keysToSend);
+    public AsymmetricEncryptionFragment setCipherText(CharSequence... text) {
+        setText(getCipherTextElement(driver), text);
         return this;
     }
 
-    public AsymmetricEncryptionFragment setInput(CharSequence... keysToSend) {
-        WebElement element = getInputElement(driver);
-        element.clear();
-        element.sendKeys(keysToSend);
+    public AsymmetricEncryptionFragment setInput(CharSequence... text) {
+        setText(getInputElement(driver), text);
         return this;
     }
 

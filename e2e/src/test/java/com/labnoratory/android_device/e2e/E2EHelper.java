@@ -1,6 +1,7 @@
 package com.labnoratory.android_device.e2e;
 
 import org.openqa.selenium.By;
+import org.openqa.selenium.WebElement;
 
 import java.io.IOException;
 
@@ -24,11 +25,11 @@ public class E2EHelper {
                 .open()
                 .clickFingerprintMenuItem()
                 .enterPIN(pin);
-        if(settingsFragment.hasFingersEnrolled()) {
+        if (settingsFragment.hasFingersEnrolled()) {
             settingsFragment.removeFingers()
                     .clickAddFingerprintButton();
         } else {
-                    settingsFragment.clickNext();
+            settingsFragment.clickNext();
         }
         settingsFragment
                 .scanFingerprint()
@@ -69,9 +70,11 @@ public class E2EHelper {
         scanFinger(2);
     }
 
-    /**
-     * @noinspection unused
-     */
+    public static void setText(WebElement element, CharSequence... text) {
+        element.clear();
+        element.sendKeys(text);
+    }
+
     public static void emulateBackButton() {
         adbShell("input keyevent 4");
     }

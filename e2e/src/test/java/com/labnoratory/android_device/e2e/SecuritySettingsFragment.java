@@ -16,6 +16,7 @@ import static com.labnoratory.android_device.e2e.E2EHelper.adbShell;
 import static com.labnoratory.android_device.e2e.E2EHelper.byText;
 import static com.labnoratory.android_device.e2e.E2EHelper.emulateBackButton;
 import static com.labnoratory.android_device.e2e.E2EHelper.scanEnrolledFinger;
+import static com.labnoratory.android_device.e2e.E2EHelper.setText;
 import static com.labnoratory.android_device.e2e.E2EHelper.sleep;
 
 public class SecuritySettingsFragment {
@@ -77,9 +78,8 @@ public class SecuritySettingsFragment {
         return this;
     }
 
-    public SecuritySettingsFragment enterPIN(CharSequence... keysToSend) {
-        WebElement element = getPINInputElement(driver);
-        element.sendKeys(keysToSend);
+    public SecuritySettingsFragment enterPIN(CharSequence... text) {
+        setText(getPINInputElement(driver), text);
         driver.pressKey(new KeyEvent(AndroidKey.ENTER));
         new WebDriverWait(driver, Duration.ofSeconds(1))
                 .until(webDriver -> webDriver.findElements(pinEntrySelector).isEmpty());
