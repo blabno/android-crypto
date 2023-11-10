@@ -1,7 +1,8 @@
 package com.labnoratory.android_device.e2e;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.testng.annotations.Test;
+
+import io.appium.java_client.android.AndroidDriver;
 
 import static com.labnoratory.android_device.e2e.Random.randomInt;
 import static com.labnoratory.android_device.e2e.Random.randomString;
@@ -9,12 +10,11 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.emptyString;
-import static org.junit.Assert.assertNotEquals;
+import static org.testng.Assert.assertNotEquals;
 
-public class SymmetricEncryptionWithPasswordE2ETest extends AbstractE2ETest {
+public class SymmetricEncryptionWithPasswordE2ETest {
 
-    @Before
-    public void setUp() {
+    public void setUp(AndroidDriver driver) {
         new MainTabsFragment(driver).clickSymmetricEncryptionWithPassword();
         SymmetricEncryptionWithPasswordFragment encryptionTab = new SymmetricEncryptionWithPasswordFragment(driver);
 
@@ -28,6 +28,8 @@ public class SymmetricEncryptionWithPasswordE2ETest extends AbstractE2ETest {
 
     @Test
     public void encryptSymmetricallyWithPassword() {
+        AndroidDriver driver = AndroidDriverFactory.getInstance();
+        setUp(driver);
         String failedToDecryptMessage = "Failed to decrypt with password";
         String dataEncryptedSuccessfully = "Data encrypted successfully";
         SymmetricEncryptionWithPasswordFragment encryptionTab = new SymmetricEncryptionWithPasswordFragment(driver);

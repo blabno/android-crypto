@@ -14,17 +14,23 @@ android {
 
 
 dependencies {
-    testImplementation("junit:junit:4.13.2")
+    testImplementation("org.testng:testng:7.8.0")
     testImplementation("org.hamcrest:hamcrest:2.2")
     testImplementation("com.github.appium:java-client:v8.6.0")
     testImplementation("commons-codec:commons-codec:1.16.0")
 }
 
 afterEvaluate {
-    tasks.named("testReleaseUnitTest") {
+    tasks.named<Test>("testReleaseUnitTest") {
+        useTestNG {
+            suites("src/test/resources/testng.xml")
+        }
         dependsOn(":sample-app:build")
     }
-    tasks.named("testDebugUnitTest") {
+    tasks.named<Test>("testDebugUnitTest") {
+        useTestNG {
+            suites("src/test/resources/testng.xml")
+        }
         dependsOn(":sample-app:build")
     }
 }

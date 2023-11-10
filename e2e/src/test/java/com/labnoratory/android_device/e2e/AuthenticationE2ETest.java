@@ -1,11 +1,14 @@
 package com.labnoratory.android_device.e2e;
 
-import org.junit.Test;
+import org.testng.annotations.Test;
 
-public class AuthenticationE2ETest extends AbstractE2ETest {
+import io.appium.java_client.android.AndroidDriver;
+
+public class AuthenticationE2ETest {
 
     @Test
     public void authenticate___authentication_succeeds() {
+        AndroidDriver driver = AndroidDriverFactory.getInstance();
         new MainTabsFragment(driver).clickAuthentication();
         new AuthenticationFragment(driver)
                 .waitUntilDisplayed()
@@ -18,6 +21,7 @@ public class AuthenticationE2ETest extends AbstractE2ETest {
 
     @Test
     public void authenticate___authentication_cancelled() {
+        AndroidDriver driver = AndroidDriverFactory.getInstance();
         new MainTabsFragment(driver).clickAuthentication();
         new AuthenticationFragment(driver)
                 .waitUntilDisplayed()

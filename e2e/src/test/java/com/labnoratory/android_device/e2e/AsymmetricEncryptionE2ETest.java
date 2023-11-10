@@ -1,19 +1,19 @@
 package com.labnoratory.android_device.e2e;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.testng.annotations.Test;
+
+import io.appium.java_client.android.AndroidDriver;
 
 import static com.labnoratory.android_device.e2e.Random.randomString;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.emptyString;
-import static org.junit.Assert.assertNotEquals;
+import static org.testng.Assert.assertNotEquals;
 
-public class AsymmetricEncryptionE2ETest extends AbstractE2ETest {
+public class AsymmetricEncryptionE2ETest {
 
-    @Before
-    public void setUp() {
+    public void setUp(AndroidDriver driver) {
         new MainTabsFragment(driver).clickAsymmetricEncryption();
         AsymmetricEncryptionFragment encryptionTab = new AsymmetricEncryptionFragment(driver);
         if (encryptionTab.isKeyAvailable()) {
@@ -25,6 +25,8 @@ public class AsymmetricEncryptionE2ETest extends AbstractE2ETest {
 
     @Test
     public void encryptAsymmetrically___key_does_not_require_authentication() {
+        AndroidDriver driver = AndroidDriverFactory.getInstance();
+        setUp(driver);
         AsymmetricEncryptionFragment encryptionTab = new AsymmetricEncryptionFragment(driver);
         String input = randomString();
         encryptionTab
@@ -49,6 +51,8 @@ public class AsymmetricEncryptionE2ETest extends AbstractE2ETest {
 
     @Test
     public void encryptAsymmetrically___key_requires_authentication() {
+        AndroidDriver driver = AndroidDriverFactory.getInstance();
+        setUp(driver);
         AsymmetricEncryptionFragment encryptionTab = new AsymmetricEncryptionFragment(driver);
         String input = randomString();
         encryptionTab
