@@ -13,8 +13,14 @@ import static com.labnoratory.android_device.e2e.FragmentHelper.assertText;
 public class SymmetricEncryptionFragment {
 
     private static final By removeKeyButtonSelector = AppiumBy.id("removeKeyButton");
+    private static final By titleSelector = AppiumBy.id("title");
 
     private final AndroidDriver driver;
+    private BiometricPromptFragment biometricPromptFragment;
+
+    public static WebElement getAuthenticationRequired(WebDriver driver) {
+        return driver.findElement(AppiumBy.id("authenticationRequired"));
+    }
 
     public static WebElement getCipherTextElement(WebDriver driver) {
         return driver.findElement(AppiumBy.id("cipherText"));
@@ -54,6 +60,29 @@ public class SymmetricEncryptionFragment {
 
     public SymmetricEncryptionFragment assertStatus(String pattern) {
         assertText(driver, SymmetricEncryptionFragment::getStatusElement, pattern);
+        return this;
+    }
+
+    public SymmetricEncryptionFragment assertBiometricPromptDisplayed() {
+        getBiometricPromptFragment().waitUntilDisplayed();
+        return this;
+    }
+
+    public SymmetricEncryptionFragment assureKeyDoesNotRequireAuthentication() {
+        WebElement authenticationRequired = getAuthenticationRequired(driver);
+        if (authenticationRequired.getText().matches(".*ON.*")) {
+            authenticationRequired.click();
+        }
+        assertText(driver, SymmetricEncryptionFragment::getAuthenticationRequired, ".*OFF.*");
+        return this;
+    }
+
+    public SymmetricEncryptionFragment assureKeyRequiresAuthentication() {
+        WebElement authenticationRequired = getAuthenticationRequired(driver);
+        if (authenticationRequired.getText().matches(".*OFF.*")) {
+            authenticationRequired.click();
+        }
+        assertText(driver, SymmetricEncryptionFragment::getAuthenticationRequired, ".*ON.*");
         return this;
     }
 
@@ -107,6 +136,13 @@ public class SymmetricEncryptionFragment {
         return this;
     }
 
+    public SymmetricEncryptionFragment scanEnrolledFinger() {
+        getBiometricPromptFragment()
+                .waitUntilDisplayed()
+                .scanEnrolledFinger();
+        return this;
+    }
+
     public SymmetricEncryptionFragment setCipherText(CharSequence... text) {
         setText(getCipherTextElement(driver), text);
         return this;
@@ -121,5 +157,18 @@ public class SymmetricEncryptionFragment {
     public SymmetricEncryptionFragment setIv(CharSequence... text) {
         setText(getIvElement(driver), text);
         return this;
+    }
+
+    /** @noinspection UnusedReturnValue*/
+    public SymmetricEncryptionFragment waitUntilDisplayed() {
+        FragmentHelper.waitUntilDisplayed(driver, titleSelector);
+        return this;
+    }
+
+    private BiometricPromptFragment getBiometricPromptFragment() {
+        if (null == biometricPromptFragment) {
+            biometricPromptFragment = new BiometricPromptFragment(driver);
+        }
+        return biometricPromptFragment;
     }
 }

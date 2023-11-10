@@ -14,6 +14,7 @@ public class AsymmetricEncryptionFragment {
 
     private static final By createKeyButtonSelector = AppiumBy.id("createKeyButton");
     private static final By removeKeyButtonSelector = AppiumBy.id("removeKeyButton");
+    private static final By titleSelector = AppiumBy.id("title");
 
     private final AndroidDriver driver;
     private BiometricPromptFragment biometricPromptFragment;
@@ -124,11 +125,15 @@ public class AsymmetricEncryptionFragment {
     }
 
     public AsymmetricEncryptionFragment scanEnrolledFinger() {
-        getBiometricPromptFragment().scanEnrolledFinger();
+        getBiometricPromptFragment()
+                .waitUntilDisplayed()
+                .scanEnrolledFinger();
         return this;
     }
 
-    /** @noinspection UnusedReturnValue*/
+    /**
+     * @noinspection UnusedReturnValue
+     */
     public AsymmetricEncryptionFragment setCipherText(CharSequence... text) {
         setText(getCipherTextElement(driver), text);
         return this;
@@ -136,6 +141,14 @@ public class AsymmetricEncryptionFragment {
 
     public AsymmetricEncryptionFragment setInput(CharSequence... text) {
         setText(getInputElement(driver), text);
+        return this;
+    }
+
+    /**
+     * @noinspection UnusedReturnValue
+     */
+    public AsymmetricEncryptionFragment waitUntilDisplayed() {
+        FragmentHelper.waitUntilDisplayed(driver, titleSelector);
         return this;
     }
 

@@ -24,7 +24,7 @@ public class MainTabsFragment {
      */
     public MainTabsFragment clickAsymmetricEncryption() {
         getTabs().get(2).click();
-        waitABit();
+        new AsymmetricEncryptionFragment(driver).waitUntilDisplayed();
         return this;
     }
 
@@ -33,7 +33,7 @@ public class MainTabsFragment {
      */
     public MainTabsFragment clickSymmetricEncryption() {
         getTabs().get(1).click();
-        waitABit();
+        new SymmetricEncryptionFragment(driver).waitUntilDisplayed();
         return this;
     }
 
@@ -42,7 +42,7 @@ public class MainTabsFragment {
      */
     public MainTabsFragment clickSymmetricEncryptionWithPassword() {
         getTabs().get(3).click();
-        waitABit();
+        new SymmetricEncryptionWithPasswordFragment(driver).waitUntilDisplayed();
         return this;
     }
 
@@ -51,15 +51,7 @@ public class MainTabsFragment {
      */
     public MainTabsFragment clickAuthentication() {
         getTabs().get(0).click();
-        waitABit();
+        new AuthenticationFragment(driver).waitUntilDisplayed();
         return this;
-    }
-
-    private void waitABit() {
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
     }
 }

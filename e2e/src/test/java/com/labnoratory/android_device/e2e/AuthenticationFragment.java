@@ -1,5 +1,6 @@
 package com.labnoratory.android_device.e2e;
 
+import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 
@@ -10,11 +11,17 @@ import static com.labnoratory.android_device.e2e.FragmentHelper.assertText;
 
 public class AuthenticationFragment {
 
+    private static final By titleSelector = AppiumBy.id("title");
+
     private final AndroidDriver driver;
     private BiometricPromptFragment biometricPromptFragment;
 
     public static WebElement getAuthenticateButton(WebDriver driver) {
         return driver.findElement(AppiumBy.id("authenticateButton"));
+    }
+
+    public static WebElement getClearButton(WebDriver driver) {
+        return driver.findElement(AppiumBy.id("clearButton"));
     }
 
     public static WebElement getStatusElement(WebDriver driver) {
@@ -25,8 +32,14 @@ public class AuthenticationFragment {
         this.driver = driver;
     }
 
+    /** @noinspection UnusedReturnValue*/
     public AuthenticationFragment assertStatus(String pattern) {
         assertText(driver, AuthenticationFragment::getStatusElement, pattern);
+        return this;
+    }
+
+    public AuthenticationFragment cancelBiometricAuthentication() {
+        getBiometricPromptFragment().cancel();
         return this;
     }
 
@@ -35,6 +48,13 @@ public class AuthenticationFragment {
      */
     public AuthenticationFragment clickAuthenticateButton() {
         getAuthenticateButton(driver).click();
+        getBiometricPromptFragment().waitUntilDisplayed();
+        return this;
+    }
+
+    public AuthenticationFragment clickClearButton() {
+        getClearButton(driver).click();
+        assertStatus("");
         return this;
     }
 
@@ -45,6 +65,11 @@ public class AuthenticationFragment {
 
     public AuthenticationFragment scanUnknownFinger() {
         getBiometricPromptFragment().scanUnknownFinger();
+        return this;
+    }
+
+    public AuthenticationFragment waitUntilDisplayed() {
+        FragmentHelper.waitUntilDisplayed(driver, titleSelector);
         return this;
     }
 

@@ -11,14 +11,13 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
 import androidx.lifecycle.LifecycleOwner;
 import androidx.lifecycle.ViewModelProvider;
 
 import static com.labnoratory.sample_app.OneTimeObserver.observeOnce;
 
-public class EncryptSymmetricallyWithPasswordFragment extends Fragment {
+public class EncryptSymmetricallyWithPasswordFragment extends AbstractTab {
 
     @Nullable
     @Override
@@ -78,6 +77,11 @@ public class EncryptSymmetricallyWithPasswordFragment extends Fragment {
             model.encrypt();
         });
         decryptButton.setOnClickListener(v -> model.decrypt());
+    }
+
+    @Override
+    public int getTitle() {
+        return R.string.encryptSymmetricallyWithPassword;
     }
 
 }

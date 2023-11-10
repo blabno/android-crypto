@@ -1,13 +1,12 @@
 package com.labnoratory.sample_app;
 
 import android.app.Activity;
+import android.util.Log;
 
 import com.labnoratory.android_crypto.AndroidAuthenticator;
 
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
-
-import static com.labnoratory.sample_app.ViewModelUtil.handleError;
 
 public class AuthenticateViewModel extends ViewModel {
 
@@ -22,11 +21,17 @@ public class AuthenticateViewModel extends ViewModel {
     public void authenticate(Activity activity) {
         new AndroidAuthenticator(activity).authenticate(null).whenComplete((cryptoObject, throwable) -> {
             if (null != throwable) {
-                handleError(TAG, status, throwable);
+                String msg = throwable.getMessage();
+                Log.e(TAG, msg, throwable);
+                status.postValue("Authentication failed");
                 return;
             }
             status.postValue("Authentication successful");
         });
+    }
+
+    public void clear() {
+        status.postValue("");
     }
 
 }

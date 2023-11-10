@@ -46,4 +46,8 @@ public class EncryptSymmetricallyFragment extends AbstractEncryptFragment {
         return new ViewModelProvider(this).get(EncryptSymmetricallyViewModel.class);
     }
 
+    @Override
+    public int getTitle() {
+        return R.string.encryptSymmetrically;
+    }
 }

@@ -8,10 +8,9 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.SwitchCompat;
-import androidx.fragment.app.Fragment;
 import androidx.lifecycle.LifecycleOwner;
 
-public abstract class AbstractEncryptFragment extends Fragment {
+public abstract class AbstractEncryptFragment extends AbstractTab {
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {

@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <dimen name="horizontal_padding">20dp</dimen>
+    <dimen name="title_font_size">25sp</dimen>
     <dimen name="vertical_padding">25dp</dimen>
     <dimen name="vertical_padding_x2">50dp</dimen>
 </resources>

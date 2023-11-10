@@ -5,6 +5,11 @@ import android.os.Bundle;
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
@@ -14,35 +19,28 @@ import androidx.viewpager2.widget.ViewPager2;
 
 public class MainActivity extends AppCompatActivity {
 
+    private static final List<AbstractTab> TABS = Collections.unmodifiableList(Arrays.asList(
+            new AuthenticateFragment(),
+            new EncryptSymmetricallyFragment(),
+            new EncryptAsymmetricallyFragment(),
+            new EncryptSymmetricallyWithPasswordFragment()));
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
         TabLayout tabLayout = findViewById(R.id.tabLayout);
-        ViewPager2 viewPager = (ViewPager2) findViewById(R.id.viewPager);
+        ViewPager2 viewPager = findViewById(R.id.viewPager);
         viewPager.setAdapter(new PagerAdapter(this));
         new TabLayoutMediator(tabLayout, viewPager, getTabConfigurationStrategy()).attach();
     }
 
     @NonNull
     private static TabLayoutMediator.TabConfigurationStrategy getTabConfigurationStrategy() {
-        return (tab, position) -> {
-            switch (position) {
-                case 0:
-                    tab.setText("Authenticate");
-                    break;
-                case 1:
-                    tab.setText("Encrypt\nsymmetrically");
-                    break;
-                case 2:
-                    tab.setText("Encrypt\nasymmetrically");
-                    break;
-                case 3:
-                    tab.setText("Encrypt\nwith password");
-                    break;
-            }
-        };
+        return (tab, position) -> Optional.ofNullable(position >= TABS.size() ? null : TABS.get(position))
+                .map(AbstractTab::getTitle)
+                .ifPresent(tab::setText);
     }
 
     private static class PagerAdapter extends FragmentStateAdapter {
@@ -53,17 +51,9 @@ public class MainActivity extends AppCompatActivity {
         @NonNull
         @Override
         public Fragment createFragment(int position) {
-            switch (position) {
-                case 0:
-                    return new AuthenticateFragment();
-                case 1:
-                    return new EncryptSymmetricallyFragment();
-                case 2:
-                    return new EncryptAsymmetricallyFragment();
-                case 3:
-                    return new EncryptSymmetricallyWithPasswordFragment();
-            }
-            return new Fragment();
+            return Optional.ofNullable(position >= TABS.size() ? null : TABS.get(position))
+                    .map(abstractTab -> (Fragment) abstractTab)
+                    .orElseGet(Fragment::new);
         }
 
         @Override

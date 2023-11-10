@@ -1,5 +1,6 @@
 package com.labnoratory.android_device.e2e;
 
+import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 
@@ -10,6 +11,8 @@ import static com.labnoratory.android_device.e2e.E2EHelper.setText;
 import static com.labnoratory.android_device.e2e.FragmentHelper.assertText;
 
 public class SymmetricEncryptionWithPasswordFragment {
+
+    private static final By titleSelector = AppiumBy.id("title");
 
     private final AndroidDriver driver;
 
@@ -104,6 +107,12 @@ public class SymmetricEncryptionWithPasswordFragment {
 
     public SymmetricEncryptionWithPasswordFragment setSalt(CharSequence... text) {
         setText(getSaltElement(driver), text);
+        return this;
+    }
+
+    /** @noinspection UnusedReturnValue*/
+    public SymmetricEncryptionWithPasswordFragment waitUntilDisplayed() {
+        FragmentHelper.waitUntilDisplayed(driver, titleSelector);
         return this;
     }
 }

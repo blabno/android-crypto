@@ -46,5 +46,9 @@ public class EncryptAsymmetricallyFragment extends AbstractEncryptFragment {
         return new ViewModelProvider(this).get(EncryptAsymmetricallyViewModel.class);
     }
 
+    @Override
+    public int getTitle() {
+        return R.string.encryptAsymmetrically;
+    }
 
 }

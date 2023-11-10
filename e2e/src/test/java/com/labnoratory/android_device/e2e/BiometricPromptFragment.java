@@ -1,16 +1,15 @@
 package com.labnoratory.android_device.e2e;
 
-import org.openqa.selenium.support.ui.WebDriverWait;
+import org.openqa.selenium.By;
 
-import java.time.Duration;
-
-import io.appium.java_client.AppiumBy;
 import io.appium.java_client.android.AndroidDriver;
 
+import static com.labnoratory.android_device.e2e.E2EHelper.byText;
 import static com.labnoratory.android_device.e2e.E2EHelper.sleep;
-import static com.labnoratory.android_device.e2e.FragmentHelper.assertText;
 
 public class BiometricPromptFragment {
+
+    private static final By biometricAuthenticationLabel = byText("Biometric Authentication");
 
     private final AndroidDriver driver;
 
@@ -18,25 +17,45 @@ public class BiometricPromptFragment {
         this.driver = driver;
     }
 
-    /** @noinspection UnusedReturnValue*/
+    /**
+     * @noinspection UnusedReturnValue
+     */
     public BiometricPromptFragment scanEnrolledFinger() {
-        assertText(driver, webDriver -> webDriver.findElement(AppiumBy.xpath("//*[@text=\"Biometric Authentication\"]")), "Biometric Authentication");
         E2EHelper.scanEnrolledFinger();
-        new WebDriverWait(driver, Duration.ofSeconds(1))
-                .until(webDriver -> {
-                    try {
-                        return webDriver.findElements(AppiumBy.xpath("//*[@text=\"Biometric Authentication\"]")).isEmpty();
-                    } catch (Exception ignore) {
-                        return true;
-                    }
-                });
+        waitUntilDisappears();
+        return this;
+    }
+
+    /**
+     * @noinspection UnusedReturnValue
+     */
+    public BiometricPromptFragment scanUnknownFinger() {
+        E2EHelper.scanUnknownFinger();
+        sleep(1000);
+        return this;
+    }
+
+    /**
+     * @noinspection UnusedReturnValue
+     */
+    public BiometricPromptFragment cancel() {
+        By cancelButtonSelector = byText("Cancel");
+        driver.findElement(cancelButtonSelector).click();
+        waitUntilDisappears();
         return this;
     }
 
     /** @noinspection UnusedReturnValue*/
-    public BiometricPromptFragment scanUnknownFinger() {
-        E2EHelper.scanUnknownFinger();
-        sleep(1000);
+    public BiometricPromptFragment waitUntilDisplayed() {
+        FragmentHelper.waitUntilDisplayed(driver, biometricAuthenticationLabel);
+        return this;
+    }
+
+    /**
+     * @noinspection UnusedReturnValue
+     */
+    public BiometricPromptFragment waitUntilDisappears() {
+        FragmentHelper.waitUntilDisappears(driver, biometricAuthenticationLabel);
         return this;
     }
 }
