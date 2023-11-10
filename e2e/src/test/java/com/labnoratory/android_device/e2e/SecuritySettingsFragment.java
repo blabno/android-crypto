@@ -13,13 +13,15 @@ import io.appium.java_client.android.nativekey.AndroidKey;
 import io.appium.java_client.android.nativekey.KeyEvent;
 
 import static com.labnoratory.android_device.e2e.E2EHelper.adbShell;
-import static com.labnoratory.android_device.e2e.E2EHelper.byText;
 import static com.labnoratory.android_device.e2e.E2EHelper.emulateBackButton;
 import static com.labnoratory.android_device.e2e.E2EHelper.scanEnrolledFinger;
-import static com.labnoratory.android_device.e2e.E2EHelper.setText;
 import static com.labnoratory.android_device.e2e.E2EHelper.sleep;
+import static com.labnoratory.android_device.e2e.FragmentHelper.byText;
+import static com.labnoratory.android_device.e2e.FragmentHelper.setText;
 
 public class SecuritySettingsFragment {
+
+    private static final String PACKAGE_NAME = "com.labnoratory.sample_app";
 
     private static final By pinEntrySelector = By.id("com.android.settings:id/password_entry");
     private static final By deleteButtonSelector = By.id("com.android.settings:id/delete_button");
@@ -57,6 +59,33 @@ public class SecuritySettingsFragment {
 
     public static WebElement getPINInputElement(WebDriver driver) {
         return driver.findElement(pinEntrySelector);
+    }
+
+    public static String resourceId(String id) {
+        return String.format("%s:id/%s",PACKAGE_NAME, id);
+    }
+
+    public static void setupFingerprint(AndroidDriver driver) {
+        String pin = "1111";
+        adbShell("locksettings clear --old " + pin);
+        sleep(500);
+        adbShell("locksettings set-pin " + pin);
+        sleep(500);
+        SecuritySettingsFragment settingsFragment = new SecuritySettingsFragment(driver)
+                .open()
+                .clickFingerprintMenuItem()
+                .enterPIN(pin);
+        if (settingsFragment.hasFingersEnrolled()) {
+            settingsFragment.removeFingers()
+                    .clickAddFingerprintButton();
+        } else {
+            settingsFragment.clickNext();
+        }
+        settingsFragment
+                .scanFingerprint()
+                .clickDone();
+        adbShell(String.format("am start %s/.MainActivity", PACKAGE_NAME));
+        sleep(1000);
     }
 
     public SecuritySettingsFragment(AndroidDriver driver) {

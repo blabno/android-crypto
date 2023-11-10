@@ -31,6 +31,15 @@ public class FragmentHelper {
         }
     }
 
+    public static By byText(String text) {
+        return By.xpath(String.format("//*[@text=\"%s\"]", text));
+    }
+
+    public static void setText(WebElement element, CharSequence... text) {
+        element.clear();
+        element.sendKeys(text);
+    }
+
     public static void waitUntilDisappears(WebDriver driver, By selector) {
         new WebDriverWait(driver, Duration.ofSeconds(1))
                 .until(webDriver -> webDriver.findElements(selector).isEmpty());

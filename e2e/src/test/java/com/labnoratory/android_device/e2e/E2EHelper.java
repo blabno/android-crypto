@@ -1,46 +1,8 @@
 package com.labnoratory.android_device.e2e;
 
-import org.openqa.selenium.By;
-import org.openqa.selenium.WebElement;
-
 import java.io.IOException;
 
-import io.appium.java_client.android.AndroidDriver;
-
 public class E2EHelper {
-
-    protected static final String PACKAGE_NAME = "com.labnoratory.sample_app";
-
-    public static String resourceId(String id) {
-        return String.format("%s:id/%s",PACKAGE_NAME, id);
-    }
-
-    public static By byText(String text) {
-        return By.xpath(String.format("//*[@text=\"%s\"]", text));
-    }
-
-    public static void setupFingerprint(AndroidDriver driver) {
-        String pin = "1111";
-        adbShell("locksettings clear --old " + pin);
-        sleep(500);
-        adbShell("locksettings set-pin " + pin);
-        sleep(500);
-        SecuritySettingsFragment settingsFragment = new SecuritySettingsFragment(driver)
-                .open()
-                .clickFingerprintMenuItem()
-                .enterPIN(pin);
-        if (settingsFragment.hasFingersEnrolled()) {
-            settingsFragment.removeFingers()
-                    .clickAddFingerprintButton();
-        } else {
-            settingsFragment.clickNext();
-        }
-        settingsFragment
-                .scanFingerprint()
-                .clickDone();
-        adbShell(String.format("am start %s/.MainActivity", PACKAGE_NAME));
-        sleep(1000);
-    }
 
     public static void sleep(long millis) {
         try {
@@ -72,11 +34,6 @@ public class E2EHelper {
 
     public static void scanUnknownFinger() {
         scanFinger(2);
-    }
-
-    public static void setText(WebElement element, CharSequence... text) {
-        element.clear();
-        element.sendKeys(text);
     }
 
     public static void emulateBackButton() {

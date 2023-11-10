@@ -7,9 +7,9 @@ import org.openqa.selenium.WebElement;
 import io.appium.java_client.AppiumBy;
 import io.appium.java_client.android.AndroidDriver;
 
-import static com.labnoratory.android_device.e2e.E2EHelper.resourceId;
-import static com.labnoratory.android_device.e2e.E2EHelper.setText;
 import static com.labnoratory.android_device.e2e.FragmentHelper.assertText;
+import static com.labnoratory.android_device.e2e.FragmentHelper.setText;
+import static com.labnoratory.android_device.e2e.SecuritySettingsFragment.resourceId;
 
 public class SymmetricEncryptionWithPasswordFragment {
 

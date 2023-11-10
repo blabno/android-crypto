@@ -4,8 +4,8 @@ import org.openqa.selenium.By;
 
 import io.appium.java_client.android.AndroidDriver;
 
-import static com.labnoratory.android_device.e2e.E2EHelper.byText;
 import static com.labnoratory.android_device.e2e.E2EHelper.sleep;
+import static com.labnoratory.android_device.e2e.FragmentHelper.byText;
 
 public class BiometricPromptFragment {
 
