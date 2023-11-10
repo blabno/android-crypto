@@ -53,7 +53,10 @@ public class SymmetricEncryptionWithPasswordE2ETest extends AbstractE2ETest {
         assertThat(iv, is(not(emptyString())));
         encryptionTab.clickDecryptButton().assertStatus(String.format("Decryption result:\n.*\nString: %s", input));
         input = "Turbo";
-        encryptionTab.setInput(input).clickEncryptButton().assertStatus(dataEncryptedSuccessfully);
+        encryptionTab
+                .setInput(input)
+                .clickEncryptButton()
+                .assertStatus(dataEncryptedSuccessfully);
         assertNotEquals(cipherText, encryptionTab.getCipherText());
         assertNotEquals(iv, encryptionTab.getIv());
 

@@ -11,6 +11,10 @@ public class E2EHelper {
 
     protected static final String PACKAGE_NAME = "com.labnoratory.sample_app";
 
+    public static String resourceId(String id) {
+        return String.format("%s:id/%s",PACKAGE_NAME, id);
+    }
+
     public static By byText(String text) {
         return By.xpath(String.format("//*[@text=\"%s\"]", text));
     }

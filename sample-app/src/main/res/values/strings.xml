@@ -16,6 +16,7 @@
     <string name="encryptAsymmetrically">Encrypt\nasymmetrically</string>
     <string name="encryptSymmetrically">Encrypt\nsymmetrically</string>
     <string name="encryptSymmetricallyWithPassword">Encrypt\nwith password</string>
+    <string name="encryptSymmetricallyWithPasswordTitle">Encrypt with password</string>
     <string name="decryptSymmetricallyWithPassword">Decrypt\nwith password</string>
     <string name="passwordLabel">Password</string>
     <string name="saltLabel">Salt</string>

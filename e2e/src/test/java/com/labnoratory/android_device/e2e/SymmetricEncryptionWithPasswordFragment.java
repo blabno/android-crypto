@@ -7,6 +7,7 @@ import org.openqa.selenium.WebElement;
 import io.appium.java_client.AppiumBy;
 import io.appium.java_client.android.AndroidDriver;
 
+import static com.labnoratory.android_device.e2e.E2EHelper.resourceId;
 import static com.labnoratory.android_device.e2e.E2EHelper.setText;
 import static com.labnoratory.android_device.e2e.FragmentHelper.assertText;
 
@@ -18,14 +19,6 @@ public class SymmetricEncryptionWithPasswordFragment {
 
     public static WebElement getCipherTextElement(WebDriver driver) {
         return driver.findElement(AppiumBy.id("cipherText"));
-    }
-
-    public static WebElement getDecryptButton(WebDriver driver) {
-        return driver.findElement(AppiumBy.id("decryptButton"));
-    }
-
-    public static WebElement getEncryptButton(WebDriver driver) {
-        return driver.findElement(AppiumBy.id("encryptButton"));
     }
 
     public static WebElement getInputElement(WebDriver driver) {
@@ -62,12 +55,16 @@ public class SymmetricEncryptionWithPasswordFragment {
     }
 
     public SymmetricEncryptionWithPasswordFragment clickDecryptButton() {
-        getDecryptButton(driver).click();
+        String uiautomatorText = String.format("new UiScrollable(new UiSelector().scrollable(true).instance(0)).scrollIntoView(new UiSelector().resourceId(\"%s\").instance(0))", resourceId("decryptButton"));
+        driver.findElement(AppiumBy.androidUIAutomator(uiautomatorText))
+                .click();
         return this;
     }
 
     public SymmetricEncryptionWithPasswordFragment clickEncryptButton() {
-        getEncryptButton(driver).click();
+        String uiautomatorText = String.format("new UiScrollable(new UiSelector().scrollable(true).instance(0)).scrollIntoView(new UiSelector().resourceId(\"%s\").instance(0))", resourceId("encryptButton"));
+        driver.findElement(AppiumBy.androidUIAutomator(uiautomatorText))
+                .click();
         return this;
     }
 
@@ -94,7 +91,9 @@ public class SymmetricEncryptionWithPasswordFragment {
         return this;
     }
 
-    /** @noinspection UnusedReturnValue*/
+    /**
+     * @noinspection UnusedReturnValue
+     */
     public SymmetricEncryptionWithPasswordFragment setIv(CharSequence... text) {
         setText(getIvElement(driver), text);
         return this;
@@ -110,7 +109,9 @@ public class SymmetricEncryptionWithPasswordFragment {
         return this;
     }
 
-    /** @noinspection UnusedReturnValue*/
+    /**
+     * @noinspection UnusedReturnValue
+     */
     public SymmetricEncryptionWithPasswordFragment waitUntilDisplayed() {
         FragmentHelper.waitUntilDisplayed(driver, titleSelector);
         return this;
