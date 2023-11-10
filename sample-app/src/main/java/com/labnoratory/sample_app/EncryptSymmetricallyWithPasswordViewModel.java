@@ -20,7 +20,7 @@ public class EncryptSymmetricallyWithPasswordViewModel extends ViewModel {
 
     protected final AndroidCrypto crypto = new AndroidCrypto();
 
-    protected final MutableLiveData<Integer> iterations = new MutableLiveData<>(1024);
+    protected final MutableLiveData<String> iterations = new MutableLiveData<>("");
     protected final MutableLiveData<String> cipherText = new MutableLiveData<>("");
     protected final MutableLiveData<String> iv = new MutableLiveData<>("");
     protected final MutableLiveData<String> password = new MutableLiveData<>("");
@@ -32,7 +32,7 @@ public class EncryptSymmetricallyWithPasswordViewModel extends ViewModel {
         return cipherText;
     }
 
-    public MutableLiveData<Integer> getIterations() {
+    public MutableLiveData<String> getIterations() {
         return iterations;
     }
 
@@ -61,12 +61,14 @@ public class EncryptSymmetricallyWithPasswordViewModel extends ViewModel {
             byte[] bytesToEncrypt = Optional.ofNullable(payload.getValue()).orElse("").getBytes(StandardCharsets.UTF_8);
             byte[] passwordBytes = Optional.ofNullable(password.getValue()).orElse("").getBytes(StandardCharsets.UTF_8);
             byte[] saltBytes = Optional.ofNullable(salt.getValue()).orElse("").getBytes(StandardCharsets.UTF_8);
-            int i = Optional.ofNullable(iterations.getValue()).orElse(1);
+            int i = Integer.parseInt(Optional.ofNullable(iterations.getValue()).orElse(""));
             EncryptionResult encryptionResult = crypto.encryptSymmetricallyWithPassword(passwordBytes, saltBytes, i, bytesToEncrypt);
             String value = Hex.encodeHexString(encryptionResult.getCipherText());
             cipherText.postValue(value);
             iv.postValue(Hex.encodeHexString(encryptionResult.getInitializationVector()));
             status.postValue("Data encrypted successfully");
+        } catch (NumberFormatException e) {
+            status.postValue("Iterations must be a number");
         } catch (Exception e) {
             handleError(TAG, status, e);
         }
@@ -78,9 +80,11 @@ public class EncryptSymmetricallyWithPasswordViewModel extends ViewModel {
             byte[] ivBytes = getBytes(iv, "Cipher text is invalid");
             byte[] passwordBytes = Optional.ofNullable(password.getValue()).orElse("").getBytes(StandardCharsets.UTF_8);
             byte[] saltBytes = Optional.ofNullable(salt.getValue()).orElse("").getBytes(StandardCharsets.UTF_8);
-            int i = Optional.ofNullable(iterations.getValue()).orElse(1);
+            int i = Integer.parseInt(Optional.ofNullable(iterations.getValue()).orElse(""));
             byte[] decryptionResult = crypto.decryptSymmetricallyWithPassword(passwordBytes, saltBytes, i, cipherTextBytes, ivBytes);
             status.postValue(String.format("Decryption result:\nHex: %s\nString: %s", Hex.encodeHexString(decryptionResult), new String(decryptionResult)));
+        } catch (NumberFormatException e) {
+            status.postValue("Iterations must be a number");
         } catch (Exception e) {
             handleError(TAG, status, e);
         }

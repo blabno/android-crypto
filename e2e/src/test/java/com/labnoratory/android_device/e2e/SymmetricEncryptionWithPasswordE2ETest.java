@@ -21,7 +21,7 @@ public class SymmetricEncryptionWithPasswordE2ETest extends AbstractE2ETest {
         encryptionTab.setInput("")
                 .setPassword("")
                 .setSalt("")
-                .setIterations("1")
+                .setIterations("")
                 .setCipherText("")
                 .setIv("");
     }
