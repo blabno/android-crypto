@@ -196,9 +196,13 @@ public class AndroidCrypto {
         }
     }
 
-    public byte[] encryptAsymmetrically(@NonNull String alias, @NonNull byte[] bytesToEncrypt) throws KeyStoreException, KeyNotFoundException, WrongKeyTypeException {
-        PublicKey publicKey = getPublicKey(alias);
-        return encryptAsymmetrically(publicKey, bytesToEncrypt);
+    public byte[] encryptAsymmetrically(@NonNull String alias, @NonNull byte[] bytesToEncrypt) throws KeyNotFoundException, WrongKeyTypeException {
+        try {
+            PublicKey publicKey = getPublicKey(alias);
+            return encryptAsymmetrically(publicKey, bytesToEncrypt);
+        } catch (KeyStoreException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public byte[] encryptAsymmetrically(@NonNull PublicKey publicKey, @NonNull byte[] bytesToEncrypt) throws WrongKeyTypeException {
@@ -253,10 +257,14 @@ public class AndroidCrypto {
         return future;
     }
 
-    public EncryptionResult encryptSymmetricallyWithPassword(@NonNull byte[] password, @NonNull byte[] salt, int iterations, @NonNull byte[] bytesToEncrypt) throws IllegalBlockSizeException, BadPaddingException {
+    public EncryptionResult encryptSymmetricallyWithPassword(@NonNull byte[] password, @NonNull byte[] salt, int iterations, @NonNull byte[] bytesToEncrypt)  {
         SecretKey secretKey = deriveSecretKey(password, salt, iterations);
         Cipher cipher = initializeSymmetricCipherForEncryption(secretKey);
-        return doEncrypt(bytesToEncrypt, cipher);
+        try {
+            return doEncrypt(bytesToEncrypt, cipher);
+        } catch (IllegalBlockSizeException | BadPaddingException e) {
+            throw new RuntimeException("Failed to encrypt with password", e);
+        }
     }
 
     public SecretKey deriveSecretKey(@NonNull byte[] password, @NonNull byte[] salt, int iterations) {
