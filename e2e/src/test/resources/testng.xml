@@ -26,4 +26,10 @@
                 name="com.labnoratory.android_device.e2e.SymmetricEncryptionWithPasswordE2ETest" />
         </classes>
     </test>
+    <test name="SigningE2ETest">
+        <classes>
+            <class name="com.labnoratory.android_device.e2e.TestSuiteSetup" />
+            <class name="com.labnoratory.android_device.e2e.SigningE2ETest" />
+        </classes>
+    </test>
 </suite>

@@ -197,12 +197,8 @@ public class AndroidCrypto {
     }
 
     public byte[] encryptAsymmetrically(@NonNull String alias, @NonNull byte[] bytesToEncrypt) throws KeyNotFoundException, WrongKeyTypeException {
-        try {
-            PublicKey publicKey = getPublicKey(alias);
-            return encryptAsymmetrically(publicKey, bytesToEncrypt);
-        } catch (KeyStoreException e) {
-            throw new RuntimeException(e);
-        }
+        PublicKey publicKey = getPublicKey(alias);
+        return encryptAsymmetrically(publicKey, bytesToEncrypt);
     }
 
     public byte[] encryptAsymmetrically(@NonNull PublicKey publicKey, @NonNull byte[] bytesToEncrypt) throws WrongKeyTypeException {
@@ -295,12 +291,16 @@ public class AndroidCrypto {
     }
 
     @NonNull
-    public PublicKey getPublicKey(@NonNull String alias) throws KeyStoreException, KeyNotFoundException {
-        Certificate certificate = getKeyStore().getCertificate(alias);
-        if (null == certificate) {
-            throw keyNotFound(alias);
+    public PublicKey getPublicKey(@NonNull String alias) throws KeyNotFoundException {
+        try {
+            Certificate certificate = getKeyStore().getCertificate(alias);
+            if (null == certificate) {
+                throw keyNotFound(alias);
+            }
+            return certificate.getPublicKey();
+        } catch (KeyStoreException e) {
+            throw new RuntimeException(e);
         }
-        return certificate.getPublicKey();
     }
 
     public Signature initializeSignatureForSigning(@NonNull String alias) throws NoSuchAlgorithmException, InvalidKeyException, KeyNotFoundException, WrongKeyTypeException {
@@ -362,17 +362,62 @@ public class AndroidCrypto {
         return signature.sign();
     }
 
-    public boolean verifySignature(@NonNull String alias, @NonNull byte[] content, @NonNull byte[] signature) throws KeyStoreException, NoSuchAlgorithmException, InvalidKeyException, SignatureException, KeyNotFoundException, WrongKeyTypeException {
+    public CompletableFuture<byte[]> sign(@NonNull String alias, @NonNull byte[] payload) {
+        return sign(alias, payload, null);
+    }
+
+    public CompletableFuture<byte[]> sign(@NonNull String alias, @NonNull byte[] payload, @Nullable Authenticator authenticator) {
+        CompletableFuture<byte[]> future = new CompletableFuture<>();
+        String exceptionMessage = "Failed to sign message";
+        try {
+            Signature signature = initializeSignatureForSigning(alias);
+
+            KeyInfo keyInfo = getKeyInfo(alias);
+            if (!keyInfo.isUserAuthenticationRequired()) {
+                signature.update(payload);
+                future.complete(signature.sign());
+                return future;
+            } else if (null == authenticator) {
+                throw keyUserNotAuthenticated();
+            }
+
+            BiometricPrompt.CryptoObject cryptoObject = new BiometricPrompt.CryptoObject(signature);
+            authenticator.authenticate(cryptoObject)
+                    .whenCompleteAsync((result, throwable) -> {
+                        if (null != throwable) {
+                            future.completeExceptionally(wrapException(exceptionMessage, throwable));
+                            return;
+                        }
+                        try {
+                            signature.update(payload);
+                            future.complete(signature.sign());
+                        } catch (Exception e) {
+                            future.completeExceptionally(wrapException(exceptionMessage, e));
+                        }
+                    });
+        } catch (KeyNotFoundException | WrongKeyTypeException | KeyUserNotAuthenticated ex) {
+            future.completeExceptionally(ex);
+        } catch (NoSuchAlgorithmException | InvalidKeyException | SignatureException e) {
+            future.completeExceptionally(wrapException(exceptionMessage, e));
+        }
+        return future;
+    }
+
+    public boolean verifySignature(@NonNull String alias, @NonNull byte[] content, @NonNull byte[] signature) throws KeyNotFoundException, WrongKeyTypeException {
         PublicKey publicKey = getPublicKey(alias);
         return verifySignature(publicKey, content, signature);
     }
 
-    public boolean verifySignature(@NonNull PublicKey publicKey, @NonNull byte[] content, @NonNull byte[] signature) throws NoSuchAlgorithmException, InvalidKeyException, SignatureException, WrongKeyTypeException {
+    public boolean verifySignature(@NonNull PublicKey publicKey, @NonNull byte[] content, @NonNull byte[] signature) throws WrongKeyTypeException {
         checkKeyAlgorithm(publicKey, EC_KEY_ALGORITHM);
-        Signature verifier = Signature.getInstance(SIGNATURE_ALGORITHM);
-        verifier.initVerify(publicKey);
-        verifier.update(content);
-        return verifier.verify(signature);
+        try {
+            Signature verifier = Signature.getInstance(SIGNATURE_ALGORITHM);
+            verifier.initVerify(publicKey);
+            verifier.update(content);
+            return verifier.verify(signature);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to verify message", e);
+        }
     }
 
     protected static KeyPair generateKeyPair(KeyGenParameterSpec keyGenParameterSpec, String algorithm) throws NoSuchAlgorithmException, NoSuchProviderException, InvalidAlgorithmParameterException {

@@ -22,4 +22,11 @@
     <string name="saltLabel">Salt</string>
     <string name="iterationsLabel">Iterations</string>
     <string name="clear">Clear</string>
+    <string name="sign">Sign</string>
+    <string name="signature">Signature</string>
+    <string name="publicKey">Public key</string>
+    <string name="createSigningKey">Create\nsigning\nkey</string>
+    <string name="removeSigningKey">Remove\nsigning\nkey</string>
+    <string name="verifySignature">Verify\nsignature</string>
+    <string name="publicKeyHint">Leave public key input empty to use local public key for signature verification.</string>
 </resources>

@@ -40,4 +40,5 @@ dependencies {
     implementation("com.google.android.material:material:1.10.0")
     implementation("androidx.constraintlayout:constraintlayout:2.1.4")
     implementation("commons-codec:commons-codec:1.16.0")
+    implementation("org.bouncycastle:bcpkix-jdk15to18:1.76")
 }

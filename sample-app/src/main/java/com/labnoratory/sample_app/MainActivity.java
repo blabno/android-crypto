@@ -23,7 +23,8 @@ public class MainActivity extends AppCompatActivity {
             new AuthenticateFragment(),
             new EncryptSymmetricallyFragment(),
             new EncryptAsymmetricallyFragment(),
-            new EncryptSymmetricallyWithPasswordFragment()));
+            new EncryptSymmetricallyWithPasswordFragment(),
+            new SignFragment()));
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,7 +59,7 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public int getItemCount() {
-            return 4;
+            return TABS.size();
         }
     }
 }

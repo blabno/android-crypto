@@ -17,6 +17,10 @@ import static org.hamcrest.Matchers.matchesPattern;
 public class FragmentHelper {
 
     public static void assertText(WebDriver driver, Function<WebDriver, WebElement> getElement, String pattern) {
+        assertText(driver, getElement, pattern, "");
+    }
+
+    public static void assertText(WebDriver driver, Function<WebDriver, WebElement> getElement, String pattern, String errorMessage) {
         try {
             new WebDriverWait(driver, Duration.ofSeconds(1))
                     .until(webDriver -> {
@@ -27,7 +31,7 @@ public class FragmentHelper {
                         }
                     });
         } catch (TimeoutException ignore) {
-            assertThat(getElement.apply(driver).getText(), matchesPattern(pattern));
+            assertThat(errorMessage, getElement.apply(driver).getText(), matchesPattern(pattern));
         }
     }
 

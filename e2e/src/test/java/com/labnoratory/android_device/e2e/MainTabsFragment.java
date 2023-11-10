@@ -54,4 +54,9 @@ public class MainTabsFragment {
         new AuthenticationFragment(driver).waitUntilDisplayed();
         return this;
     }
+
+    public SigningFragment clickSigning() {
+        getTabs().get(4).click();
+        return new SigningFragment(driver).waitUntilDisplayed();
+    }
 }
