@@ -78,6 +78,13 @@ public class AsymmetricEncryptionFragment {
         return this;
     }
 
+    public AsymmetricEncryptionFragment cancelBiometrics() {
+        getBiometricPromptFragment()
+                .waitUntilDisplayed()
+                .cancel();
+        return this;
+    }
+
     /**
      * @noinspection UnusedReturnValue
      */

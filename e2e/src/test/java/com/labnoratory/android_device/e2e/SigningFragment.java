@@ -91,6 +91,13 @@ public class SigningFragment {
         return this;
     }
 
+    public SigningFragment cancelBiometrics() {
+        getBiometricPromptFragment()
+                .waitUntilDisplayed()
+                .cancel();
+        return this;
+    }
+
     /**
      * @noinspection UnusedReturnValue
      */
@@ -141,13 +148,6 @@ public class SigningFragment {
         getBiometricPromptFragment()
                 .waitUntilDisplayed()
                 .scanEnrolledFinger();
-        return this;
-    }
-
-    public SigningFragment cancelBiometrics() {
-        getBiometricPromptFragment()
-                .waitUntilDisplayed()
-                .cancel();
         return this;
     }
 

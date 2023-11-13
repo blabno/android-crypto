@@ -99,8 +99,8 @@ public class SigningE2ETest {
                 .assertBiometricPromptDisplayed()
                 .cancelBiometrics()
                 .assertStatus("Failed to sign message");
-        assertEquals("", signingTab.getPublicKey());
-        assertEquals("", signingTab.getSignature());
+        assertThat(signingTab.getPublicKey(), is(emptyString()));
+        assertThat(signingTab.getSignature(), is(emptyString()));
     }
 
     @Test

@@ -87,4 +87,21 @@ public class SymmetricEncryptionE2ETest {
                 .scanEnrolledFinger()
                 .assertStatus("Failed to decrypt with symmetric key");
     }
+
+    @Test
+    public void encryptSymmetrically___key_requires_authentication_but_user_cancels_authentication() {
+        AndroidDriver driver = AndroidDriverFactory.getInstance();
+        SymmetricEncryptionFragment encryptionTab = new SymmetricEncryptionFragment(driver);
+        String input = randomString();
+        encryptionTab
+                .assureKeyRequiresAuthentication()
+                .createKey()
+                .assertStatus("Encryption key created successfully")
+                .setInput(input)
+                .clickEncryptButton()
+                .cancelBiometrics()
+                .assertStatus("Failed to encrypt with symmetric key");
+        assertThat(encryptionTab.getCipherText(), is(emptyString()));
+        assertThat(encryptionTab.getIv(), is(emptyString()));
+    }
 }

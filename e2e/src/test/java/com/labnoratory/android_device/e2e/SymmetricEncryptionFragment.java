@@ -86,6 +86,13 @@ public class SymmetricEncryptionFragment {
         return this;
     }
 
+    public SymmetricEncryptionFragment cancelBiometrics() {
+        getBiometricPromptFragment()
+                .waitUntilDisplayed()
+                .cancel();
+        return this;
+    }
+
     /**
      * @noinspection UnusedReturnValue
      */

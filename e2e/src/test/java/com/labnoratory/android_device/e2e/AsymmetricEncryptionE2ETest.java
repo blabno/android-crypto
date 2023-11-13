@@ -78,4 +78,21 @@ public class AsymmetricEncryptionE2ETest {
                 .assertStatus("Failed to decrypt with asymmetric key");
     }
 
+    @Test
+    public void encryptAsymmetrically___key_requires_authentication_but_user_cancels_authentication() {
+        AndroidDriver driver = AndroidDriverFactory.getInstance();
+        AsymmetricEncryptionFragment encryptionTab = new AsymmetricEncryptionFragment(driver);
+        String input = randomString();
+        encryptionTab
+                .assureKeyRequiresAuthentication()
+                .createKey()
+                .assertStatus("Encryption key created successfully")
+                .setInput(input)
+                .clickEncryptButton()
+                .assertStatus("Data encrypted successfully")
+                .clickDecryptButton()
+                .cancelBiometrics()
+                .assertStatus("Failed to decrypt with asymmetric key");
+    }
+
 }
