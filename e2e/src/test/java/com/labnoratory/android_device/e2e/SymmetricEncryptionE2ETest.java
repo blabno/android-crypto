@@ -1,5 +1,6 @@
 package com.labnoratory.android_device.e2e;
 
+import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import io.appium.java_client.android.AndroidDriver;
@@ -13,9 +14,10 @@ import static org.testng.Assert.assertNotEquals;
 
 public class SymmetricEncryptionE2ETest {
 
-    public void setUp(AndroidDriver driver) {
-        new MainTabsFragment(driver).clickSymmetricEncryption();
-        SymmetricEncryptionFragment encryptionTab = new SymmetricEncryptionFragment(driver);
+    @BeforeMethod
+    public void setUp() {
+        SymmetricEncryptionFragment encryptionTab = new MainTabsFragment(AndroidDriverFactory.getInstance())
+                .clickSymmetricEncryption();
         if (encryptionTab.isKeyAvailable()) {
             encryptionTab.removeKey();
         }
@@ -27,7 +29,6 @@ public class SymmetricEncryptionE2ETest {
     @Test
     public void encryptSymmetrically___key_does_not_require_authentication() {
         AndroidDriver driver = AndroidDriverFactory.getInstance();
-        setUp(driver);
         SymmetricEncryptionFragment encryptionTab = new SymmetricEncryptionFragment(driver);
         String input = randomString();
         encryptionTab
@@ -56,7 +57,6 @@ public class SymmetricEncryptionE2ETest {
     @Test
     public void encryptSymmetrically___key_requires_authentication() {
         AndroidDriver driver = AndroidDriverFactory.getInstance();
-        setUp(driver);
         SymmetricEncryptionFragment encryptionTab = new SymmetricEncryptionFragment(driver);
         String input = randomString();
         encryptionTab

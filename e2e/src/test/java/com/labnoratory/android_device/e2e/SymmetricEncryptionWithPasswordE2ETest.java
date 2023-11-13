@@ -1,5 +1,6 @@
 package com.labnoratory.android_device.e2e;
 
+import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import io.appium.java_client.android.AndroidDriver;
@@ -14,11 +15,11 @@ import static org.testng.Assert.assertNotEquals;
 
 public class SymmetricEncryptionWithPasswordE2ETest {
 
-    public void setUp(AndroidDriver driver) {
-        new MainTabsFragment(driver).clickSymmetricEncryptionWithPassword();
-        SymmetricEncryptionWithPasswordFragment encryptionTab = new SymmetricEncryptionWithPasswordFragment(driver);
-
-        encryptionTab.setInput("")
+    @BeforeMethod
+    public void setUp() {
+        new MainTabsFragment(AndroidDriverFactory.getInstance())
+                .clickSymmetricEncryptionWithPassword()
+                .setInput("")
                 .setPassword("")
                 .setSalt("")
                 .setIterations("")
@@ -29,7 +30,6 @@ public class SymmetricEncryptionWithPasswordE2ETest {
     @Test
     public void encryptSymmetricallyWithPassword() {
         AndroidDriver driver = AndroidDriverFactory.getInstance();
-        setUp(driver);
         String failedToDecryptMessage = "Failed to decrypt with password";
         String dataEncryptedSuccessfully = "Data encrypted successfully";
         SymmetricEncryptionWithPasswordFragment encryptionTab = new SymmetricEncryptionWithPasswordFragment(driver);

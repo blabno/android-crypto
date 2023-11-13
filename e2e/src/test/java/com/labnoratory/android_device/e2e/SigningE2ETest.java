@@ -17,8 +17,8 @@ public class SigningE2ETest {
 
     @BeforeMethod
     public void setUp() {
-        AndroidDriver driver = AndroidDriverFactory.getInstance();
-        SigningFragment signingTab = new MainTabsFragment(driver).clickSigning();
+        SigningFragment signingTab = new MainTabsFragment(AndroidDriverFactory.getInstance())
+                .clickSigning();
         if (signingTab.isKeyAvailable()) {
             signingTab.removeKey();
         }

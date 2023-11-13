@@ -19,40 +19,24 @@ public class MainTabsFragment {
         return driver.findElements(AppiumBy.xpath("//*[contains(@resource-id,\":id/tabLayout\")]//android.widget.TextView"));
     }
 
-    /**
-     * @noinspection UnusedReturnValue
-     */
-    public MainTabsFragment clickAsymmetricEncryption() {
+    public AsymmetricEncryptionFragment clickAsymmetricEncryption() {
         getTabs().get(2).click();
-        new AsymmetricEncryptionFragment(driver).waitUntilDisplayed();
-        return this;
+        return new AsymmetricEncryptionFragment(driver).waitUntilDisplayed();
     }
 
-    /**
-     * @noinspection UnusedReturnValue
-     */
-    public MainTabsFragment clickSymmetricEncryption() {
+    public SymmetricEncryptionFragment clickSymmetricEncryption() {
         getTabs().get(1).click();
-        new SymmetricEncryptionFragment(driver).waitUntilDisplayed();
-        return this;
+        return new SymmetricEncryptionFragment(driver).waitUntilDisplayed();
     }
 
-    /**
-     * @noinspection UnusedReturnValue
-     */
-    public MainTabsFragment clickSymmetricEncryptionWithPassword() {
+    public SymmetricEncryptionWithPasswordFragment clickSymmetricEncryptionWithPassword() {
         getTabs().get(3).click();
-        new SymmetricEncryptionWithPasswordFragment(driver).waitUntilDisplayed();
-        return this;
+        return new SymmetricEncryptionWithPasswordFragment(driver).waitUntilDisplayed();
     }
 
-    /**
-     * @noinspection UnusedReturnValue
-     */
-    public MainTabsFragment clickAuthentication() {
+    public AuthenticationFragment clickAuthentication() {
         getTabs().get(0).click();
-        new AuthenticationFragment(driver).waitUntilDisplayed();
-        return this;
+        return new AuthenticationFragment(driver).waitUntilDisplayed();
     }
 
     public SigningFragment clickSigning() {

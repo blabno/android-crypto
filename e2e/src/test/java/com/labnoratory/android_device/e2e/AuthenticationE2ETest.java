@@ -9,8 +9,8 @@ public class AuthenticationE2ETest {
     @Test
     public void authenticate___authentication_succeeds() {
         AndroidDriver driver = AndroidDriverFactory.getInstance();
-        new MainTabsFragment(driver).clickAuthentication();
-        new AuthenticationFragment(driver)
+        new MainTabsFragment(driver)
+                .clickAuthentication()
                 .waitUntilDisplayed()
                 .clickClearButton()
                 .clickAuthenticateButton()
@@ -22,8 +22,8 @@ public class AuthenticationE2ETest {
     @Test
     public void authenticate___authentication_cancelled() {
         AndroidDriver driver = AndroidDriverFactory.getInstance();
-        new MainTabsFragment(driver).clickAuthentication();
-        new AuthenticationFragment(driver)
+        new MainTabsFragment(driver)
+                .clickAuthentication()
                 .waitUntilDisplayed()
                 .clickClearButton()
                 .clickAuthenticateButton()

@@ -1,5 +1,6 @@
 package com.labnoratory.android_device.e2e;
 
+import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import io.appium.java_client.android.AndroidDriver;
@@ -13,9 +14,10 @@ import static org.testng.Assert.assertNotEquals;
 
 public class AsymmetricEncryptionE2ETest {
 
-    public void setUp(AndroidDriver driver) {
-        new MainTabsFragment(driver).clickAsymmetricEncryption();
-        AsymmetricEncryptionFragment encryptionTab = new AsymmetricEncryptionFragment(driver);
+    @BeforeMethod
+    public void setUp() {
+        AsymmetricEncryptionFragment encryptionTab = new MainTabsFragment(AndroidDriverFactory.getInstance())
+                .clickAsymmetricEncryption();
         if (encryptionTab.isKeyAvailable()) {
             encryptionTab.removeKey();
         }
@@ -26,7 +28,6 @@ public class AsymmetricEncryptionE2ETest {
     @Test
     public void encryptAsymmetrically___key_does_not_require_authentication() {
         AndroidDriver driver = AndroidDriverFactory.getInstance();
-        setUp(driver);
         AsymmetricEncryptionFragment encryptionTab = new AsymmetricEncryptionFragment(driver);
         String input = randomString();
         encryptionTab
@@ -52,7 +53,6 @@ public class AsymmetricEncryptionE2ETest {
     @Test
     public void encryptAsymmetrically___key_requires_authentication() {
         AndroidDriver driver = AndroidDriverFactory.getInstance();
-        setUp(driver);
         AsymmetricEncryptionFragment encryptionTab = new AsymmetricEncryptionFragment(driver);
         String input = randomString();
         encryptionTab
