@@ -21,6 +21,8 @@ public class TestSuiteSetup {
 
     @AfterSuite
     public static void afterClass() {
-        AndroidDriverFactory.getInstance().quit();
+        AndroidDriver driver = AndroidDriverFactory.getInstance();
+        if (null != driver)
+            driver.quit();
     }
 }
