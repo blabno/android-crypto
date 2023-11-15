@@ -4,6 +4,9 @@ import org.testng.annotations.Test;
 
 import io.appium.java_client.android.AndroidDriver;
 
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.is;
+
 public class AuthenticationE2ETest {
 
     @Test
@@ -16,7 +19,7 @@ public class AuthenticationE2ETest {
                 .clickAuthenticateButton()
                 .scanUnknownFinger()
                 .scanEnrolledFinger()
-                .assertStatus("Authentication successful");
+                .assertStatus(is(equalTo("Authentication successful")));
     }
 
     @Test
@@ -28,7 +31,7 @@ public class AuthenticationE2ETest {
                 .clickClearButton()
                 .clickAuthenticateButton()
                 .cancelBiometricAuthentication()
-                .assertStatus("Authentication failed");
+                .assertStatus(is(equalTo("Authentication failed")));
     }
 
 }

@@ -8,9 +8,9 @@ import io.appium.java_client.android.AndroidDriver;
 import static com.labnoratory.android_device.e2e.Random.randomString;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.emptyString;
-import static org.testng.Assert.assertNotEquals;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.matchesPattern;
 
 public class SymmetricEncryptionE2ETest {
 
@@ -23,85 +23,86 @@ public class SymmetricEncryptionE2ETest {
         }
         encryptionTab.setInput("")
                 .setCipherText("")
-                .setIv("");
+                .setIV("");
     }
 
     @Test
     public void encryptSymmetrically___key_does_not_require_authentication() {
-        AndroidDriver driver = AndroidDriverFactory.getInstance();
-        SymmetricEncryptionFragment encryptionTab = new SymmetricEncryptionFragment(driver);
         String input = randomString();
-        encryptionTab
+        AndroidDriver driver = AndroidDriverFactory.getInstance();
+        SymmetricEncryptionFragment encryptionTab = new SymmetricEncryptionFragment(driver)
                 .assureKeyDoesNotRequireAuthentication()
                 .createKey()
-                .assertStatus("Encryption key created successfully")
+                .assertStatus(is(equalTo("Encryption key created successfully")))
                 .setInput(input)
                 .clickEncryptButton()
-                .assertStatus("Data encrypted successfully")
-                .setInput("");
+                .assertStatus(is(equalTo("Data encrypted successfully")))
+                .setInput("")
+                .assertCipherText(is(not(emptyString())))
+                .assertIV(is(not(emptyString())));
         String cipherText = encryptionTab.getCipherText();
         String iv = encryptionTab.getIv();
-        assertThat(cipherText, is(not(emptyString())));
-        assertThat(iv, is(not(emptyString())));
-        encryptionTab.clickDecryptButton().assertStatus(String.format("Decryption result:\n.*\nString: %s", input));
-        encryptionTab.setInput("Turbo").clickEncryptButton().assertStatus("Data encrypted successfully");
-        assertNotEquals(cipherText, encryptionTab.getCipherText());
-        assertNotEquals(iv, encryptionTab.getIv());
+        encryptionTab
+                .clickDecryptButton()
+                .assertStatus(matchesPattern(String.format("Decryption result:\n.*\nString: %s", input)))
+                .setInput("Turbo")
+                .clickEncryptButton()
+                .assertStatus(is(equalTo("Data encrypted successfully")))
+                .assertCipherText(is(not(equalTo(cipherText))))
+                .assertIV(is(not(equalTo(iv))));
 
         encryptionTab.removeKey()
                 .createKey()
                 .clickDecryptButton()
-                .assertStatus("Failed to decrypt with symmetric key");
+                .assertStatus(is(equalTo("Failed to decrypt with symmetric key")));
     }
 
     @Test
     public void encryptSymmetrically___key_requires_authentication() {
-        AndroidDriver driver = AndroidDriverFactory.getInstance();
-        SymmetricEncryptionFragment encryptionTab = new SymmetricEncryptionFragment(driver);
         String input = randomString();
-        encryptionTab
+        AndroidDriver driver = AndroidDriverFactory.getInstance();
+        SymmetricEncryptionFragment encryptionTab = new SymmetricEncryptionFragment(driver)
                 .assureKeyRequiresAuthentication()
                 .createKey()
-                .assertStatus("Encryption key created successfully")
+                .assertStatus(is(equalTo("Encryption key created successfully")))
                 .setInput(input)
                 .clickEncryptButton()
                 .assertBiometricPromptDisplayed()
                 .scanEnrolledFinger()
-                .assertStatus("Data encrypted successfully")
-                .setInput("");
+                .assertStatus(is(equalTo("Data encrypted successfully")))
+                .setInput("")
+                .assertCipherText(is(not(emptyString())));
         String cipherText = encryptionTab.getCipherText();
-        assertThat(cipherText, is(not(emptyString())));
         encryptionTab.clickDecryptButton()
                 .assertBiometricPromptDisplayed()
                 .scanEnrolledFinger()
-                .assertStatus(String.format("Decryption result:\n.*\nString: %s", input))
+                .assertStatus(matchesPattern(String.format("Decryption result:\n.*\nString: %s", input)))
                 .setInput("Turbo")
                 .clickEncryptButton()
                 .scanEnrolledFinger()
-                .assertStatus("Data encrypted successfully");
-        assertNotEquals(cipherText, encryptionTab.getCipherText());
+                .assertStatus(is(equalTo("Data encrypted successfully")))
+                .assertCipherText(is(not(equalTo(cipherText))));
 
         encryptionTab.removeKey()
                 .createKey()
                 .clickDecryptButton()
                 .scanEnrolledFinger()
-                .assertStatus("Failed to decrypt with symmetric key");
+                .assertStatus(is(equalTo("Failed to decrypt with symmetric key")));
     }
 
     @Test
     public void encryptSymmetrically___key_requires_authentication_but_user_cancels_authentication() {
-        AndroidDriver driver = AndroidDriverFactory.getInstance();
-        SymmetricEncryptionFragment encryptionTab = new SymmetricEncryptionFragment(driver);
         String input = randomString();
-        encryptionTab
+        AndroidDriver driver = AndroidDriverFactory.getInstance();
+        new SymmetricEncryptionFragment(driver)
                 .assureKeyRequiresAuthentication()
                 .createKey()
-                .assertStatus("Encryption key created successfully")
+                .assertStatus(is(equalTo("Encryption key created successfully")))
                 .setInput(input)
                 .clickEncryptButton()
                 .cancelBiometrics()
-                .assertStatus("Failed to encrypt with symmetric key");
-        assertThat(encryptionTab.getCipherText(), is(emptyString()));
-        assertThat(encryptionTab.getIv(), is(emptyString()));
+                .assertStatus(is(equalTo("Failed to encrypt with symmetric key")))
+                .assertCipherText(is(emptyString()))
+                .assertIV(is(emptyString()));
     }
 }

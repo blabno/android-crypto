@@ -1,5 +1,6 @@
 package com.labnoratory.android_device.e2e;
 
+import org.hamcrest.Matcher;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
@@ -9,6 +10,9 @@ import io.appium.java_client.android.AndroidDriver;
 
 import static com.labnoratory.android_device.e2e.FragmentHelper.assertText;
 import static com.labnoratory.android_device.e2e.FragmentHelper.setText;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.matchesPattern;
 
 public class SigningFragment {
 
@@ -58,13 +62,23 @@ public class SigningFragment {
         this.driver = driver;
     }
 
-    public SigningFragment assertStatus(String pattern) {
-        assertText(driver, SigningFragment::getStatusElement, pattern);
+    public SigningFragment assertPublicKey(Matcher<String> matcher) {
+        assertText(driver, SigningFragment::getPublicKeyElement, matcher);
         return this;
     }
 
-    public SigningFragment assertStatus(String pattern, String errorMessage) {
-        assertText(driver, SigningFragment::getStatusElement, pattern, errorMessage);
+    public SigningFragment assertSignature(Matcher<String> matcher) {
+        assertText(driver, SigningFragment::getSignatureElement, matcher);
+        return this;
+    }
+
+    public SigningFragment assertStatus(Matcher<String> matcher) {
+        assertText(driver, SigningFragment::getStatusElement, matcher);
+        return this;
+    }
+
+    public SigningFragment assertStatus(Matcher<String> matcher, String errorMessage) {
+        assertText(driver, SigningFragment::getStatusElement, matcher, errorMessage);
         return this;
     }
 
@@ -75,19 +89,19 @@ public class SigningFragment {
 
     public SigningFragment assureKeyDoesNotRequireAuthentication() {
         WebElement authenticationRequired = getAuthenticationRequired(driver);
-        if (authenticationRequired.getText().matches(".*ON.*")) {
+        if (matchesPattern(".*NO.*").matches(authenticationRequired.getText())) {
             authenticationRequired.click();
         }
-        assertText(driver, SigningFragment::getAuthenticationRequired, ".*OFF.*");
+        assertText(driver, SigningFragment::getAuthenticationRequired, matchesPattern(".*OFF.*"));
         return this;
     }
 
     public SigningFragment assureKeyRequiresAuthentication() {
         WebElement authenticationRequired = getAuthenticationRequired(driver);
-        if (authenticationRequired.getText().matches(".*OFF.*")) {
+        if (matchesPattern(".*OFF.*").matches(authenticationRequired.getText())) {
             authenticationRequired.click();
         }
-        assertText(driver, SigningFragment::getAuthenticationRequired, ".*ON.*");
+        assertText(driver, SigningFragment::getAuthenticationRequired, matchesPattern(".*ON.*"));
         return this;
     }
 
@@ -98,17 +112,11 @@ public class SigningFragment {
         return this;
     }
 
-    /**
-     * @noinspection UnusedReturnValue
-     */
     public SigningFragment clickCreateKeyButton() {
         getCreateKeyButton(driver).click();
         return this;
     }
 
-    /**
-     * @noinspection UnusedReturnValue
-     */
     public SigningFragment clickRemoveKeyButton() {
         getRemoveKeyButton(driver).click();
         return this;
@@ -125,7 +133,7 @@ public class SigningFragment {
     }
 
     public SigningFragment createKey() {
-        return clickCreateKeyButton().assertStatus("Signing key created successfully");
+        return clickCreateKeyButton().assertStatus(is(equalTo("Signing key created successfully")));
     }
 
     public String getSignature() {
@@ -141,7 +149,7 @@ public class SigningFragment {
     }
 
     public SigningFragment removeKey() {
-        return clickRemoveKeyButton().assertStatus("Key removed successfully");
+        return clickRemoveKeyButton().assertStatus(is(equalTo("Key removed successfully")));
     }
 
     public SigningFragment scanEnrolledFinger() {
@@ -161,13 +169,11 @@ public class SigningFragment {
         return this;
     }
 
-    /** @noinspection UnusedReturnValue*/
     public SigningFragment setPublicKey(CharSequence... text) {
         setText(getPublicKeyElement(driver), text);
         return this;
     }
 
-    /** @noinspection UnusedReturnValue*/
     public SigningFragment waitUntilDisplayed() {
         FragmentHelper.waitUntilDisplayed(driver, titleSelector);
         return this;

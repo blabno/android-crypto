@@ -6,11 +6,11 @@ import org.testng.annotations.Test;
 import io.appium.java_client.android.AndroidDriver;
 
 import static com.labnoratory.android_device.e2e.Random.randomString;
+import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.emptyString;
-import static org.testng.Assert.assertNotEquals;
+import static org.hamcrest.Matchers.matchesPattern;
 
 public class AsymmetricEncryptionE2ETest {
 
@@ -27,72 +27,75 @@ public class AsymmetricEncryptionE2ETest {
 
     @Test
     public void encryptAsymmetrically___key_does_not_require_authentication() {
-        AndroidDriver driver = AndroidDriverFactory.getInstance();
-        AsymmetricEncryptionFragment encryptionTab = new AsymmetricEncryptionFragment(driver);
         String input = randomString();
-        encryptionTab
+        AndroidDriver driver = AndroidDriverFactory.getInstance();
+        AsymmetricEncryptionFragment encryptionTab = new AsymmetricEncryptionFragment(driver)
                 .assureKeyDoesNotRequireAuthentication()
                 .createKey()
-                .assertStatus("Encryption key created successfully")
+                .assertStatus(is(equalTo("Encryption key created successfully")))
                 .setInput(input)
                 .clickEncryptButton()
-                .assertStatus("Data encrypted successfully")
-                .setInput("");
+                .assertStatus(is(equalTo("Data encrypted successfully")))
+                .setInput("")
+                .assertCipherText(is(not(emptyString())));
         String cipherText = encryptionTab.getCipherText();
-        assertThat(cipherText, is(not(emptyString())));
-        encryptionTab.clickDecryptButton().assertStatus(String.format("Decryption result:\n.*\nString: %s", input));
-        encryptionTab.setInput("Turbo").clickEncryptButton().assertStatus("Data encrypted successfully");
-        assertNotEquals(cipherText, encryptionTab.getCipherText());
+        encryptionTab
+                .clickDecryptButton()
+                .assertStatus(matchesPattern(String.format("Decryption result:\n.*\nString: %s", input)))
+                .setInput("Turbo")
+                .clickEncryptButton()
+                .assertStatus(is(equalTo("Data encrypted successfully")))
+                .assertCipherText(is(not(equalTo(cipherText))));
 
         encryptionTab.removeKey()
                 .createKey()
                 .clickDecryptButton()
-                .assertStatus("Failed to decrypt with asymmetric key");
+                .assertStatus(is(equalTo("Failed to decrypt with asymmetric key")));
     }
 
     @Test
     public void encryptAsymmetrically___key_requires_authentication() {
-        AndroidDriver driver = AndroidDriverFactory.getInstance();
-        AsymmetricEncryptionFragment encryptionTab = new AsymmetricEncryptionFragment(driver);
         String input = randomString();
-        encryptionTab
+        AndroidDriver driver = AndroidDriverFactory.getInstance();
+        AsymmetricEncryptionFragment encryptionTab = new AsymmetricEncryptionFragment(driver)
                 .assureKeyRequiresAuthentication()
                 .createKey()
-                .assertStatus("Encryption key created successfully")
+                .assertStatus(is(equalTo("Encryption key created successfully")))
                 .setInput(input)
                 .clickEncryptButton()
-                .assertStatus("Data encrypted successfully")
-                .setInput("");
+                .assertStatus(is(equalTo("Data encrypted successfully")))
+                .setInput("")
+                .assertCipherText(is(not(emptyString())));
         String cipherText = encryptionTab.getCipherText();
-        assertThat(cipherText, is(not(emptyString())));
         encryptionTab.clickDecryptButton()
                 .scanEnrolledFinger()
-                .assertStatus(String.format("Decryption result:\n.*\nString: %s", input))
-                .setInput("Turbo").clickEncryptButton().assertStatus("Data encrypted successfully");
-        assertNotEquals(cipherText, encryptionTab.getCipherText());
+                .assertStatus(matchesPattern(String.format("Decryption result:\n.*\nString: %s", input)))
+                .setInput("Turbo")
+                .clickEncryptButton()
+                .assertStatus(is(equalTo("Data encrypted successfully")))
+                .assertCipherText(is(not(equalTo(cipherText))));
 
         encryptionTab.removeKey()
                 .createKey()
                 .clickDecryptButton()
                 .scanEnrolledFinger()
-                .assertStatus("Failed to decrypt with asymmetric key");
+                .assertStatus(is(equalTo("Failed to decrypt with asymmetric key")));
     }
 
     @Test
     public void encryptAsymmetrically___key_requires_authentication_but_user_cancels_authentication() {
-        AndroidDriver driver = AndroidDriverFactory.getInstance();
-        AsymmetricEncryptionFragment encryptionTab = new AsymmetricEncryptionFragment(driver);
         String input = randomString();
-        encryptionTab
+        AndroidDriver driver = AndroidDriverFactory.getInstance();
+        new AsymmetricEncryptionFragment(driver)
                 .assureKeyRequiresAuthentication()
                 .createKey()
-                .assertStatus("Encryption key created successfully")
+                .assertStatus(is(equalTo("Encryption key created successfully")))
                 .setInput(input)
                 .clickEncryptButton()
-                .assertStatus("Data encrypted successfully")
+                .assertStatus(is(equalTo("Data encrypted successfully")))
                 .clickDecryptButton()
                 .cancelBiometrics()
-                .assertStatus("Failed to decrypt with asymmetric key");
+                .assertStatus(is(equalTo("Failed to decrypt with asymmetric key")));
     }
 
 }

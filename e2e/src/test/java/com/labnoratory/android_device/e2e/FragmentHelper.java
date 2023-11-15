@@ -1,5 +1,6 @@
 package com.labnoratory.android_device.e2e;
 
+import org.hamcrest.Matcher;
 import org.openqa.selenium.By;
 import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.WebDriver;
@@ -9,34 +10,45 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 import java.time.Duration;
 import java.util.function.Function;
 
+import io.appium.java_client.AppiumBy;
 import io.appium.java_client.android.AndroidDriver;
 
+import static com.labnoratory.android_device.e2e.E2EHelper.PACKAGE_NAME;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.matchesPattern;
 
 public class FragmentHelper {
 
-    public static void assertText(WebDriver driver, Function<WebDriver, WebElement> getElement, String pattern) {
-        assertText(driver, getElement, pattern, "");
+    public static void assertText(WebDriver driver, Function<WebDriver, WebElement> getElement, Matcher<String> matcher) {
+        assertText(driver, getElement, matcher, "");
     }
 
-    public static void assertText(WebDriver driver, Function<WebDriver, WebElement> getElement, String pattern, String errorMessage) {
+    public static void assertText(WebDriver driver, Function<WebDriver, WebElement> getElement, Matcher<String> matcher, String errorMessage) {
         try {
             new WebDriverWait(driver, Duration.ofSeconds(1))
                     .until(webDriver -> {
                         try {
-                            return getElement.apply(webDriver).getText().matches(pattern);
+                            String text = getElement.apply(webDriver).getText();
+                            return matcher.matches(text);
                         } catch (Exception ignore) {
                             return false;
                         }
                     });
         } catch (TimeoutException ignore) {
-            assertThat(errorMessage, getElement.apply(driver).getText(), matchesPattern(pattern));
+            assertThat(errorMessage, getElement.apply(driver).getText(), matcher);
         }
+    }
+
+    public static By byId(String id) {
+        String uiautomatorText = String.format("new UiScrollable(new UiSelector().scrollable(true).instance(0)).scrollIntoView(new UiSelector().resourceId(\"%s\").instance(0))", resourceId(id));
+        return AppiumBy.androidUIAutomator(uiautomatorText);
     }
 
     public static By byText(String text) {
         return By.xpath(String.format("//*[@text=\"%s\"]", text));
+    }
+
+    public static String resourceId(String id) {
+        return String.format("%s:id/%s", PACKAGE_NAME, id);
     }
 
     public static void setText(WebElement element, CharSequence... text) {

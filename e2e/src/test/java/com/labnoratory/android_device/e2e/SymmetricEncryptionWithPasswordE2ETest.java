@@ -3,15 +3,18 @@ package com.labnoratory.android_device.e2e;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
+import java.util.LinkedList;
+
 import io.appium.java_client.android.AndroidDriver;
 
+import static com.labnoratory.android_device.e2e.Random.getUnique;
 import static com.labnoratory.android_device.e2e.Random.randomInt;
 import static com.labnoratory.android_device.e2e.Random.randomString;
+import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.emptyString;
-import static org.testng.Assert.assertNotEquals;
+import static org.hamcrest.Matchers.matchesPattern;
 
 public class SymmetricEncryptionWithPasswordE2ETest {
 
@@ -24,7 +27,7 @@ public class SymmetricEncryptionWithPasswordE2ETest {
                 .setSalt("")
                 .setIterations("")
                 .setCipherText("")
-                .setIv("");
+                .setIV("");
     }
 
     @Test
@@ -32,8 +35,9 @@ public class SymmetricEncryptionWithPasswordE2ETest {
         AndroidDriver driver = AndroidDriverFactory.getInstance();
         String failedToDecryptMessage = "Failed to decrypt with password";
         String dataEncryptedSuccessfully = "Data encrypted successfully";
-        SymmetricEncryptionWithPasswordFragment encryptionTab = new SymmetricEncryptionWithPasswordFragment(driver);
-        String input = randomString();
+        LinkedList<String> inputs = getUnique(2, Random::randomString);
+        String input1 = inputs.pop();
+        String input2 = inputs.pop();
         String password = randomString();
         String salt = randomString();
         int rawIterations = randomInt(1000);
@@ -41,44 +45,45 @@ public class SymmetricEncryptionWithPasswordE2ETest {
         String wrongPassword = password + "aa";
         String wrongSalt = salt + "aa";
         String wrongIterations = (rawIterations + 1) + "";
-        encryptionTab
-                .setInput(input)
+
+        SymmetricEncryptionWithPasswordFragment encryptionTab = new SymmetricEncryptionWithPasswordFragment(driver)
+                .setInput(input1)
                 .setPassword(password)
                 .setSalt(salt)
                 .setIterations(iterations)
                 .clickEncryptButton()
-                .assertStatus(dataEncryptedSuccessfully)
-                .setInput("");
+                .assertStatus(is(equalTo(dataEncryptedSuccessfully)))
+                .setInput("")
+                .assertCipherText(is(not(emptyString())))
+                .assertIV(is(not(emptyString())));
         String cipherText = encryptionTab.getCipherText();
-        String iv = encryptionTab.getIv();
-        assertThat(cipherText, is(not(emptyString())));
-        assertThat(iv, is(not(emptyString())));
-        encryptionTab.clickDecryptButton().assertStatus(String.format("Decryption result:\n.*\nString: %s", input));
-        input = "Turbo";
+        String iv = encryptionTab.getIV();
         encryptionTab
-                .setInput(input)
+                .clickDecryptButton()
+                .assertStatus(matchesPattern(String.format("Decryption result:\n.*\nString: %s", input1)))
+                .setInput(input2)
                 .clickEncryptButton()
-                .assertStatus(dataEncryptedSuccessfully);
-        assertNotEquals(cipherText, encryptionTab.getCipherText());
-        assertNotEquals(iv, encryptionTab.getIv());
+                .assertStatus(is(equalTo(dataEncryptedSuccessfully)))
+                .assertCipherText(is(not(equalTo(cipherText))))
+                .assertIV(is(not(equalTo(iv))));
 
         encryptionTab.setPassword(wrongPassword)
                 .clickDecryptButton()
-                .assertStatus(failedToDecryptMessage);
+                .assertStatus(is(equalTo(failedToDecryptMessage)));
 
         encryptionTab.setPassword(password)
                 .setSalt(wrongSalt)
                 .clickDecryptButton()
-                .assertStatus(failedToDecryptMessage);
+                .assertStatus(is(equalTo(failedToDecryptMessage)));
 
         encryptionTab.setSalt(salt)
                 .setIterations(wrongIterations)
                 .clickDecryptButton()
-                .assertStatus(failedToDecryptMessage);
+                .assertStatus(is(equalTo(failedToDecryptMessage)));
 
         encryptionTab
                 .setIterations(iterations)
                 .clickDecryptButton()
-                .assertStatus(String.format("Decryption result:\n.*\nString: %s", input));
+                .assertStatus(matchesPattern(String.format("Decryption result:\n.*\nString: %s", input2)));
     }
 }

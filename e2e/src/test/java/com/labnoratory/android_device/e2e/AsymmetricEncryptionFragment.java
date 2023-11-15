@@ -1,5 +1,6 @@
 package com.labnoratory.android_device.e2e;
 
+import org.hamcrest.Matcher;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
@@ -9,6 +10,9 @@ import io.appium.java_client.android.AndroidDriver;
 
 import static com.labnoratory.android_device.e2e.FragmentHelper.assertText;
 import static com.labnoratory.android_device.e2e.FragmentHelper.setText;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.matchesPattern;
 
 public class AsymmetricEncryptionFragment {
 
@@ -55,8 +59,13 @@ public class AsymmetricEncryptionFragment {
         this.driver = driver;
     }
 
-    public AsymmetricEncryptionFragment assertStatus(String pattern) {
-        assertText(driver, AsymmetricEncryptionFragment::getStatusElement, pattern);
+    public AsymmetricEncryptionFragment assertCipherText(Matcher<String> matcher) {
+        assertText(driver, AsymmetricEncryptionFragment::getCipherTextElement, matcher);
+        return this;
+    }
+
+    public AsymmetricEncryptionFragment assertStatus(Matcher<String> matcher) {
+        assertText(driver, AsymmetricEncryptionFragment::getStatusElement, matcher);
         return this;
     }
 
@@ -65,7 +74,7 @@ public class AsymmetricEncryptionFragment {
         if (authenticationRequired.getText().matches(".*ON.*")) {
             authenticationRequired.click();
         }
-        assertText(driver, AsymmetricEncryptionFragment::getAuthenticationRequired, ".*OFF.*");
+        assertText(driver, AsymmetricEncryptionFragment::getAuthenticationRequired, matchesPattern(".*OFF.*"));
         return this;
     }
 
@@ -74,7 +83,7 @@ public class AsymmetricEncryptionFragment {
         if (authenticationRequired.getText().matches(".*OFF.*")) {
             authenticationRequired.click();
         }
-        assertText(driver, AsymmetricEncryptionFragment::getAuthenticationRequired, ".*ON.*");
+        assertText(driver, AsymmetricEncryptionFragment::getAuthenticationRequired, matchesPattern(".*ON.*"));
         return this;
     }
 
@@ -85,17 +94,11 @@ public class AsymmetricEncryptionFragment {
         return this;
     }
 
-    /**
-     * @noinspection UnusedReturnValue
-     */
     public AsymmetricEncryptionFragment clickCreateKeyButton() {
         getCreateKeyButton(driver).click();
         return this;
     }
 
-    /**
-     * @noinspection UnusedReturnValue
-     */
     public AsymmetricEncryptionFragment clickRemoveKeyButton() {
         getRemoveKeyButton(driver).click();
         return this;
@@ -112,9 +115,8 @@ public class AsymmetricEncryptionFragment {
     }
 
     public AsymmetricEncryptionFragment createKey() {
-        clickCreateKeyButton();
-        assertStatus("Encryption key created successfully");
-        return this;
+        return clickCreateKeyButton()
+                .assertStatus(is(equalTo("Encryption key created successfully")));
     }
 
     public String getCipherText() {
@@ -126,9 +128,8 @@ public class AsymmetricEncryptionFragment {
     }
 
     public AsymmetricEncryptionFragment removeKey() {
-        clickRemoveKeyButton();
-        assertStatus("Key removed successfully");
-        return this;
+        return clickRemoveKeyButton()
+                .assertStatus(is(equalTo("Key removed successfully")));
     }
 
     public AsymmetricEncryptionFragment scanEnrolledFinger() {
@@ -151,9 +152,6 @@ public class AsymmetricEncryptionFragment {
         return this;
     }
 
-    /**
-     * @noinspection UnusedReturnValue
-     */
     public AsymmetricEncryptionFragment waitUntilDisplayed() {
         FragmentHelper.waitUntilDisplayed(driver, titleSelector);
         return this;

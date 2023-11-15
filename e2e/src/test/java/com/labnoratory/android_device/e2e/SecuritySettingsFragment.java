@@ -12,6 +12,7 @@ import io.appium.java_client.android.AndroidDriver;
 import io.appium.java_client.android.nativekey.AndroidKey;
 import io.appium.java_client.android.nativekey.KeyEvent;
 
+import static com.labnoratory.android_device.e2e.E2EHelper.PACKAGE_NAME;
 import static com.labnoratory.android_device.e2e.E2EHelper.adbShell;
 import static com.labnoratory.android_device.e2e.E2EHelper.emulateBackButton;
 import static com.labnoratory.android_device.e2e.E2EHelper.scanEnrolledFinger;
@@ -20,8 +21,6 @@ import static com.labnoratory.android_device.e2e.FragmentHelper.byText;
 import static com.labnoratory.android_device.e2e.FragmentHelper.setText;
 
 public class SecuritySettingsFragment {
-
-    private static final String PACKAGE_NAME = "com.labnoratory.sample_app";
 
     private static final By pinEntrySelector = By.id("com.android.settings:id/password_entry");
     private static final By deleteButtonSelector = By.id("com.android.settings:id/delete_button");
@@ -59,10 +58,6 @@ public class SecuritySettingsFragment {
 
     public static WebElement getPINInputElement(WebDriver driver) {
         return driver.findElement(pinEntrySelector);
-    }
-
-    public static String resourceId(String id) {
-        return String.format("%s:id/%s",PACKAGE_NAME, id);
     }
 
     public static void setupFingerprint(AndroidDriver driver) {

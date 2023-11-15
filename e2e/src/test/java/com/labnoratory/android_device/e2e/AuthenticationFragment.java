@@ -1,5 +1,6 @@
 package com.labnoratory.android_device.e2e;
 
+import org.hamcrest.Matcher;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
@@ -8,6 +9,8 @@ import io.appium.java_client.AppiumBy;
 import io.appium.java_client.android.AndroidDriver;
 
 import static com.labnoratory.android_device.e2e.FragmentHelper.assertText;
+import static org.hamcrest.Matchers.emptyString;
+import static org.hamcrest.Matchers.is;
 
 public class AuthenticationFragment {
 
@@ -32,9 +35,8 @@ public class AuthenticationFragment {
         this.driver = driver;
     }
 
-    /** @noinspection UnusedReturnValue*/
-    public AuthenticationFragment assertStatus(String pattern) {
-        assertText(driver, AuthenticationFragment::getStatusElement, pattern);
+    public AuthenticationFragment assertStatus(Matcher<String> matcher) {
+        assertText(driver, AuthenticationFragment::getStatusElement, matcher);
         return this;
     }
 
@@ -43,9 +45,6 @@ public class AuthenticationFragment {
         return this;
     }
 
-    /**
-     * @noinspection UnusedReturnValue
-     */
     public AuthenticationFragment clickAuthenticateButton() {
         getAuthenticateButton(driver).click();
         getBiometricPromptFragment().waitUntilDisplayed();
@@ -54,8 +53,7 @@ public class AuthenticationFragment {
 
     public AuthenticationFragment clickClearButton() {
         getClearButton(driver).click();
-        assertStatus("");
-        return this;
+        return assertStatus(is(emptyString()));
     }
 
     public AuthenticationFragment scanEnrolledFinger() {

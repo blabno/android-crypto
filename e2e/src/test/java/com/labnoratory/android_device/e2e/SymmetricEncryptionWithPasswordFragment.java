@@ -1,5 +1,6 @@
 package com.labnoratory.android_device.e2e;
 
+import org.hamcrest.Matcher;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
@@ -8,8 +9,8 @@ import io.appium.java_client.AppiumBy;
 import io.appium.java_client.android.AndroidDriver;
 
 import static com.labnoratory.android_device.e2e.FragmentHelper.assertText;
+import static com.labnoratory.android_device.e2e.FragmentHelper.byId;
 import static com.labnoratory.android_device.e2e.FragmentHelper.setText;
-import static com.labnoratory.android_device.e2e.SecuritySettingsFragment.resourceId;
 
 public class SymmetricEncryptionWithPasswordFragment {
 
@@ -25,7 +26,7 @@ public class SymmetricEncryptionWithPasswordFragment {
         return driver.findElement(AppiumBy.id("input"));
     }
 
-    public static WebElement getIvElement(WebDriver driver) {
+    public static WebElement getIVElement(WebDriver driver) {
         return driver.findElement(AppiumBy.id("iv"));
     }
 
@@ -49,22 +50,28 @@ public class SymmetricEncryptionWithPasswordFragment {
         this.driver = driver;
     }
 
-    public SymmetricEncryptionWithPasswordFragment assertStatus(String pattern) {
-        assertText(driver, SymmetricEncryptionWithPasswordFragment::getStatusElement, pattern);
+    public SymmetricEncryptionWithPasswordFragment assertCipherText(Matcher<String> matcher) {
+        assertText(driver, SymmetricEncryptionWithPasswordFragment::getCipherTextElement, matcher);
+        return this;
+    }
+
+    public SymmetricEncryptionWithPasswordFragment assertIV(Matcher<String> matcher) {
+        assertText(driver, SymmetricEncryptionWithPasswordFragment::getIVElement, matcher);
+        return this;
+    }
+
+    public SymmetricEncryptionWithPasswordFragment assertStatus(Matcher<String> matcher) {
+        assertText(driver, SymmetricEncryptionWithPasswordFragment::getStatusElement, matcher);
         return this;
     }
 
     public SymmetricEncryptionWithPasswordFragment clickDecryptButton() {
-        String uiautomatorText = String.format("new UiScrollable(new UiSelector().scrollable(true).instance(0)).scrollIntoView(new UiSelector().resourceId(\"%s\").instance(0))", resourceId("decryptButton"));
-        driver.findElement(AppiumBy.androidUIAutomator(uiautomatorText))
-                .click();
+        driver.findElement(byId("decryptButton")).click();
         return this;
     }
 
     public SymmetricEncryptionWithPasswordFragment clickEncryptButton() {
-        String uiautomatorText = String.format("new UiScrollable(new UiSelector().scrollable(true).instance(0)).scrollIntoView(new UiSelector().resourceId(\"%s\").instance(0))", resourceId("encryptButton"));
-        driver.findElement(AppiumBy.androidUIAutomator(uiautomatorText))
-                .click();
+        driver.findElement(byId("encryptButton")).click();
         return this;
     }
 
@@ -72,8 +79,8 @@ public class SymmetricEncryptionWithPasswordFragment {
         return getCipherTextElement(driver).getText();
     }
 
-    public String getIv() {
-        return getIvElement(driver).getText();
+    public String getIV() {
+        return getIVElement(driver).getText();
     }
 
     public SymmetricEncryptionWithPasswordFragment setCipherText(CharSequence... text) {
@@ -91,11 +98,9 @@ public class SymmetricEncryptionWithPasswordFragment {
         return this;
     }
 
-    /**
-     * @noinspection UnusedReturnValue
-     */
-    public SymmetricEncryptionWithPasswordFragment setIv(CharSequence... text) {
-        setText(getIvElement(driver), text);
+    /** @noinspection UnusedReturnValue*/
+    public SymmetricEncryptionWithPasswordFragment setIV(CharSequence... text) {
+        setText(getIVElement(driver), text);
         return this;
     }
 
@@ -109,9 +114,6 @@ public class SymmetricEncryptionWithPasswordFragment {
         return this;
     }
 
-    /**
-     * @noinspection UnusedReturnValue
-     */
     public SymmetricEncryptionWithPasswordFragment waitUntilDisplayed() {
         FragmentHelper.waitUntilDisplayed(driver, titleSelector);
         return this;

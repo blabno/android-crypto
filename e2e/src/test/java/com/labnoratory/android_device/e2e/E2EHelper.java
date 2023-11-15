@@ -4,6 +4,8 @@ import java.io.IOException;
 
 public class E2EHelper {
 
+    public static final String PACKAGE_NAME = "com.labnoratory.sample_app";
+
     public static void sleep(long millis) {
         try {
             Thread.sleep(millis);

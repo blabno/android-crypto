@@ -1,5 +1,6 @@
 package com.labnoratory.android_device.e2e;
 
+import org.hamcrest.Matcher;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
@@ -9,6 +10,9 @@ import io.appium.java_client.android.AndroidDriver;
 
 import static com.labnoratory.android_device.e2e.FragmentHelper.assertText;
 import static com.labnoratory.android_device.e2e.FragmentHelper.setText;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.matchesPattern;
 
 public class SymmetricEncryptionFragment {
 
@@ -42,7 +46,7 @@ public class SymmetricEncryptionFragment {
         return driver.findElement(AppiumBy.id("input"));
     }
 
-    public static WebElement getIvElement(WebDriver driver) {
+    public static WebElement getIVElement(WebDriver driver) {
         return driver.findElement(AppiumBy.id("iv"));
     }
 
@@ -58,8 +62,8 @@ public class SymmetricEncryptionFragment {
         this.driver = driver;
     }
 
-    public SymmetricEncryptionFragment assertStatus(String pattern) {
-        assertText(driver, SymmetricEncryptionFragment::getStatusElement, pattern);
+    public SymmetricEncryptionFragment assertStatus(Matcher<String> matcher) {
+        assertText(driver, SymmetricEncryptionFragment::getStatusElement, matcher);
         return this;
     }
 
@@ -68,12 +72,22 @@ public class SymmetricEncryptionFragment {
         return this;
     }
 
+    public SymmetricEncryptionFragment assertCipherText(Matcher<String> matcher) {
+        assertText(driver, SymmetricEncryptionFragment::getCipherTextElement, matcher);
+        return this;
+    }
+
+    public SymmetricEncryptionFragment assertIV(Matcher<String> matcher) {
+        assertText(driver, SymmetricEncryptionFragment::getIVElement, matcher);
+        return this;
+    }
+
     public SymmetricEncryptionFragment assureKeyDoesNotRequireAuthentication() {
         WebElement authenticationRequired = getAuthenticationRequired(driver);
         if (authenticationRequired.getText().matches(".*ON.*")) {
             authenticationRequired.click();
         }
-        assertText(driver, SymmetricEncryptionFragment::getAuthenticationRequired, ".*OFF.*");
+        assertText(driver, SymmetricEncryptionFragment::getAuthenticationRequired, matchesPattern(".*OFF.*"));
         return this;
     }
 
@@ -82,7 +96,7 @@ public class SymmetricEncryptionFragment {
         if (authenticationRequired.getText().matches(".*OFF.*")) {
             authenticationRequired.click();
         }
-        assertText(driver, SymmetricEncryptionFragment::getAuthenticationRequired, ".*ON.*");
+        assertText(driver, SymmetricEncryptionFragment::getAuthenticationRequired, matchesPattern(".*ON.*"));
         return this;
     }
 
@@ -93,17 +107,11 @@ public class SymmetricEncryptionFragment {
         return this;
     }
 
-    /**
-     * @noinspection UnusedReturnValue
-     */
     public SymmetricEncryptionFragment clickCreateKeyButton() {
         getCreateKeyButton(driver).click();
         return this;
     }
 
-    /**
-     * @noinspection UnusedReturnValue
-     */
     public SymmetricEncryptionFragment clickRemoveKeyButton() {
         getRemoveKeyButton(driver).click();
         return this;
@@ -120,9 +128,7 @@ public class SymmetricEncryptionFragment {
     }
 
     public SymmetricEncryptionFragment createKey() {
-        clickCreateKeyButton();
-        assertStatus("Encryption key created successfully");
-        return this;
+        return clickCreateKeyButton().assertStatus(is(equalTo("Encryption key created successfully")));
     }
 
     public String getCipherText() {
@@ -130,7 +136,7 @@ public class SymmetricEncryptionFragment {
     }
 
     public String getIv() {
-        return getIvElement(driver).getText();
+        return getIVElement(driver).getText();
     }
 
     public boolean isKeyAvailable() {
@@ -138,9 +144,7 @@ public class SymmetricEncryptionFragment {
     }
 
     public SymmetricEncryptionFragment removeKey() {
-        clickRemoveKeyButton();
-        assertStatus("Key removed successfully");
-        return this;
+        return clickRemoveKeyButton().assertStatus(is(equalTo("Key removed successfully")));
     }
 
     public SymmetricEncryptionFragment scanEnrolledFinger() {
@@ -161,12 +165,11 @@ public class SymmetricEncryptionFragment {
     }
 
     /** @noinspection UnusedReturnValue*/
-    public SymmetricEncryptionFragment setIv(CharSequence... text) {
-        setText(getIvElement(driver), text);
+    public SymmetricEncryptionFragment setIV(CharSequence... text) {
+        setText(getIVElement(driver), text);
         return this;
     }
 
-    /** @noinspection UnusedReturnValue*/
     public SymmetricEncryptionFragment waitUntilDisplayed() {
         FragmentHelper.waitUntilDisplayed(driver, titleSelector);
         return this;
