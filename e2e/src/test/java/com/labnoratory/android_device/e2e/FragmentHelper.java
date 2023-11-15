@@ -44,7 +44,7 @@ public class FragmentHelper {
     }
 
     public static By byText(String text) {
-        return By.xpath(String.format("//*[@text=\"%s\"]", text));
+        return By.xpath(String.format(".//*[@text=\"%s\"]", text));
     }
 
     public static String resourceId(String id) {
