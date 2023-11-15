@@ -1,11 +1,15 @@
 package com.labnoratory.android_device.e2e;
 
+import com.github.javafaker.Faker;
+
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
+import java.util.LinkedList;
+
 import io.appium.java_client.android.AndroidDriver;
 
-import static com.labnoratory.android_device.e2e.Random.randomString;
+import static com.labnoratory.android_device.e2e.Random.getUnique;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
@@ -27,13 +31,15 @@ public class AsymmetricEncryptionE2ETest {
 
     @Test
     public void encryptAsymmetrically___key_does_not_require_authentication() {
-        String input = randomString();
+        LinkedList<String> inputs = getUnique(2, () -> Faker.instance().ancient().hero());
+        String input1 = inputs.pop();
+        String input2 = inputs.pop();
         AndroidDriver driver = AndroidDriverFactory.getInstance();
         AsymmetricEncryptionFragment encryptionTab = new AsymmetricEncryptionFragment(driver)
                 .assureKeyDoesNotRequireAuthentication()
                 .createKey()
                 .assertStatus(is(equalTo("Encryption key created successfully")))
-                .setInput(input)
+                .setInput(input1)
                 .clickEncryptButton()
                 .assertStatus(is(equalTo("Data encrypted successfully")))
                 .setInput("")
@@ -41,8 +47,8 @@ public class AsymmetricEncryptionE2ETest {
         String cipherText = encryptionTab.getCipherText();
         encryptionTab
                 .clickDecryptButton()
-                .assertStatus(matchesPattern(String.format("Decryption result:\n.*\nString: %s", input)))
-                .setInput("Turbo")
+                .assertStatus(matchesPattern(String.format("Decryption result:\n.*\nString: %s", input1)))
+                .setInput(input2)
                 .clickEncryptButton()
                 .assertStatus(is(equalTo("Data encrypted successfully")))
                 .assertCipherText(is(not(equalTo(cipherText))));
@@ -55,13 +61,15 @@ public class AsymmetricEncryptionE2ETest {
 
     @Test
     public void encryptAsymmetrically___key_requires_authentication() {
-        String input = randomString();
+        LinkedList<String> inputs = getUnique(2, () -> Faker.instance().ancient().hero());
+        String input1 = inputs.pop();
+        String input2 = inputs.pop();
         AndroidDriver driver = AndroidDriverFactory.getInstance();
         AsymmetricEncryptionFragment encryptionTab = new AsymmetricEncryptionFragment(driver)
                 .assureKeyRequiresAuthentication()
                 .createKey()
                 .assertStatus(is(equalTo("Encryption key created successfully")))
-                .setInput(input)
+                .setInput(input1)
                 .clickEncryptButton()
                 .assertStatus(is(equalTo("Data encrypted successfully")))
                 .setInput("")
@@ -69,8 +77,8 @@ public class AsymmetricEncryptionE2ETest {
         String cipherText = encryptionTab.getCipherText();
         encryptionTab.clickDecryptButton()
                 .scanEnrolledFinger()
-                .assertStatus(matchesPattern(String.format("Decryption result:\n.*\nString: %s", input)))
-                .setInput("Turbo")
+                .assertStatus(matchesPattern(String.format("Decryption result:\n.*\nString: %s", input1)))
+                .setInput(input2)
                 .clickEncryptButton()
                 .assertStatus(is(equalTo("Data encrypted successfully")))
                 .assertCipherText(is(not(equalTo(cipherText))));
@@ -84,7 +92,7 @@ public class AsymmetricEncryptionE2ETest {
 
     @Test
     public void encryptAsymmetrically___key_requires_authentication_but_user_cancels_authentication() {
-        String input = randomString();
+        String input = Faker.instance().ancient().hero();
         AndroidDriver driver = AndroidDriverFactory.getInstance();
         new AsymmetricEncryptionFragment(driver)
                 .assureKeyRequiresAuthentication()

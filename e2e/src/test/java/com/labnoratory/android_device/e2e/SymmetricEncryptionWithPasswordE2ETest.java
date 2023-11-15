@@ -1,5 +1,7 @@
 package com.labnoratory.android_device.e2e;
 
+import com.github.javafaker.Faker;
+
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
@@ -8,8 +10,6 @@ import java.util.LinkedList;
 import io.appium.java_client.android.AndroidDriver;
 
 import static com.labnoratory.android_device.e2e.Random.getUnique;
-import static com.labnoratory.android_device.e2e.Random.randomInt;
-import static com.labnoratory.android_device.e2e.Random.randomString;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
@@ -35,12 +35,13 @@ public class SymmetricEncryptionWithPasswordE2ETest {
         AndroidDriver driver = AndroidDriverFactory.getInstance();
         String failedToDecryptMessage = "Failed to decrypt with password";
         String dataEncryptedSuccessfully = "Data encrypted successfully";
-        LinkedList<String> inputs = getUnique(2, Random::randomString);
+        Faker faker = Faker.instance();
+        LinkedList<String> inputs = getUnique(2, () -> faker.chuckNorris().fact());
         String input1 = inputs.pop();
         String input2 = inputs.pop();
-        String password = randomString();
-        String salt = randomString();
-        int rawIterations = randomInt(1000);
+        String password = faker.beer().name();
+        String salt = faker.beer().malt();
+        int rawIterations = faker.number().numberBetween(1, 1000);
         String iterations = "" + rawIterations;
         String wrongPassword = password + "aa";
         String wrongSalt = salt + "aa";

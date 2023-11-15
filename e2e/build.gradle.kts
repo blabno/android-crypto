@@ -17,6 +17,7 @@ dependencies {
     testImplementation("org.testng:testng:7.8.0")
     testImplementation("org.hamcrest:hamcrest:2.2")
     testImplementation("com.github.appium:java-client:v8.6.0")
+    testImplementation("com.github.javafaker:javafaker:1.0.2")
     testImplementation("commons-codec:commons-codec:1.16.0")
 }
 

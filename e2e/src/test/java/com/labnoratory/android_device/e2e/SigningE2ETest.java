@@ -1,11 +1,15 @@
 package com.labnoratory.android_device.e2e;
 
+import com.github.javafaker.Faker;
+
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
+import java.util.LinkedList;
+
 import io.appium.java_client.android.AndroidDriver;
 
-import static com.labnoratory.android_device.e2e.Random.randomString;
+import static com.labnoratory.android_device.e2e.Random.getUnique;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
@@ -27,13 +31,16 @@ public class SigningE2ETest {
 
     @Test
     public void sign___key_does_not_require_authentication() {
-        String input = randomString();
+        LinkedList<String> inputs = getUnique(3, () -> Faker.instance().ancient().hero());
+        String input1 = inputs.pop();
+        String input2 = inputs.pop();
+        String input3 = inputs.pop();
         AndroidDriver driver = AndroidDriverFactory.getInstance();
         SigningFragment signingTab = new SigningFragment(driver)
                 .assureKeyDoesNotRequireAuthentication()
                 .createKey()
                 .assertStatus(is(equalTo("Signing key created successfully")))
-                .setInput(input)
+                .setInput(input1)
                 .clickSignButton()
                 .assertStatus(is(equalTo("Data signed successfully")))
                 .assertSignature(is(not(emptyString())))
@@ -43,7 +50,7 @@ public class SigningE2ETest {
         signingTab
                 .clickVerifySignatureButton()
                 .assertStatus(is(equalTo("Signature valid")))
-                .setInput("Turbo")
+                .setInput(input2)
                 .clickSignButton()
                 .assertStatus(is(equalTo("Data signed successfully")))
                 .assertSignature(is(not(equalTo(signature))))
@@ -58,7 +65,7 @@ public class SigningE2ETest {
                 .assertStatus(is(equalTo("Signature invalid")), "Local key changed, so signature should be invalid")
                 .clickSignButton()
                 .assertStatus(is(equalTo("Data signed successfully")))
-                .setInput("Other " + input)
+                .setInput(input3)
                 .clickVerifySignatureButton()
                 .assertStatus(is(equalTo("Signature invalid")), "Input changed, so signature should be invalid")
                 .assertPublicKey(is(not(equalTo(publicKey))));
@@ -66,27 +73,29 @@ public class SigningE2ETest {
 
     @Test
     public void sign___key_requires_authentication() {
-        String input = randomString();
+        LinkedList<String> inputs = getUnique(2, () -> Faker.instance().ancient().hero());
+        String input1 = inputs.pop();
+        String input2 = inputs.pop();
         AndroidDriver driver = AndroidDriverFactory.getInstance();
         new SigningFragment(driver)
                 .assureKeyRequiresAuthentication()
                 .createKey()
                 .assertStatus(is(equalTo("Signing key created successfully")))
-                .setInput(input)
+                .setInput(input1)
                 .clickSignButton()
                 .assertBiometricPromptDisplayed()
                 .scanEnrolledFinger()
                 .assertStatus(is(equalTo("Data signed successfully")))
                 .clickVerifySignatureButton()
                 .assertStatus(is(equalTo("Signature valid")))
-                .setInput("Turbo")
+                .setInput(input2)
                 .clickVerifySignatureButton()
                 .assertStatus(is(equalTo("Signature invalid")));
     }
 
     @Test
     public void sign___key_requires_authentication_but_user_cancels_authentication() {
-        String input = randomString();
+        String input = Faker.instance().ancient().hero();
         AndroidDriver driver = AndroidDriverFactory.getInstance();
         new SigningFragment(driver)
                 .assureKeyRequiresAuthentication()
