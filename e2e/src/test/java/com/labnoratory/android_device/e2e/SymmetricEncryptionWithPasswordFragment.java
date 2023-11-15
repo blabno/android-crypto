@@ -5,7 +5,6 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 
-import io.appium.java_client.AppiumBy;
 import io.appium.java_client.android.AndroidDriver;
 
 import static com.labnoratory.android_device.e2e.FragmentHelper.assertText;
@@ -14,36 +13,36 @@ import static com.labnoratory.android_device.e2e.FragmentHelper.setText;
 
 public class SymmetricEncryptionWithPasswordFragment {
 
-    private static final By titleSelector = AppiumBy.id("title");
+    private static final By titleSelector = byId("title");
 
     private final AndroidDriver driver;
 
     public static WebElement getCipherTextElement(WebDriver driver) {
-        return driver.findElement(AppiumBy.id("cipherText"));
+        return driver.findElement(byId("cipherText"));
     }
 
     public static WebElement getInputElement(WebDriver driver) {
-        return driver.findElement(AppiumBy.id("input"));
+        return driver.findElement(byId("input"));
     }
 
     public static WebElement getIVElement(WebDriver driver) {
-        return driver.findElement(AppiumBy.id("iv"));
+        return driver.findElement(byId("iv"));
     }
 
     public static WebElement getIterationsElement(WebDriver driver) {
-        return driver.findElement(AppiumBy.id("iterations"));
+        return driver.findElement(byId("iterations"));
     }
 
     public static WebElement getPasswordElement(WebDriver driver) {
-        return driver.findElement(AppiumBy.id("password"));
+        return driver.findElement(byId("password"));
     }
 
     public static WebElement getSaltElement(WebDriver driver) {
-        return driver.findElement(AppiumBy.id("salt"));
+        return driver.findElement(byId("salt"));
     }
 
     public static WebElement getStatusElement(WebDriver driver) {
-        return driver.findElement(AppiumBy.id("status"));
+        return driver.findElement(byId("status"));
     }
 
     public SymmetricEncryptionWithPasswordFragment(AndroidDriver driver) {

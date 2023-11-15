@@ -5,30 +5,30 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 
-import io.appium.java_client.AppiumBy;
 import io.appium.java_client.android.AndroidDriver;
 
 import static com.labnoratory.android_device.e2e.FragmentHelper.assertText;
+import static com.labnoratory.android_device.e2e.FragmentHelper.byId;
 import static org.hamcrest.Matchers.emptyString;
 import static org.hamcrest.Matchers.is;
 
 public class AuthenticationFragment {
 
-    private static final By titleSelector = AppiumBy.id("title");
+    private static final By titleSelector = byId("title");
 
     private final AndroidDriver driver;
     private BiometricPromptFragment biometricPromptFragment;
 
     public static WebElement getAuthenticateButton(WebDriver driver) {
-        return driver.findElement(AppiumBy.id("authenticateButton"));
+        return driver.findElement(byId("authenticateButton"));
     }
 
     public static WebElement getClearButton(WebDriver driver) {
-        return driver.findElement(AppiumBy.id("clearButton"));
+        return driver.findElement(byId("clearButton"));
     }
 
     public static WebElement getStatusElement(WebDriver driver) {
-        return driver.findElement(AppiumBy.id("status"));
+        return driver.findElement(byId("status"));
     }
 
     public AuthenticationFragment(AndroidDriver driver) {

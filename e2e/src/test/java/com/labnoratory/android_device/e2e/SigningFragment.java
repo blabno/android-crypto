@@ -5,10 +5,10 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 
-import io.appium.java_client.AppiumBy;
 import io.appium.java_client.android.AndroidDriver;
 
 import static com.labnoratory.android_device.e2e.FragmentHelper.assertText;
+import static com.labnoratory.android_device.e2e.FragmentHelper.byId;
 import static com.labnoratory.android_device.e2e.FragmentHelper.setText;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
@@ -16,26 +16,26 @@ import static org.hamcrest.Matchers.matchesPattern;
 
 public class SigningFragment {
 
-    private static final By removeKeyButtonSelector = AppiumBy.id("removeKeyButton");
-    private static final By titleSelector = AppiumBy.id("title");
+    private static final By removeKeyButtonSelector = byId("removeKeyButton");
+    private static final By titleSelector = byId("title");
 
     private final AndroidDriver driver;
     private BiometricPromptFragment biometricPromptFragment;
 
     public static WebElement getAuthenticationRequired(WebDriver driver) {
-        return driver.findElement(AppiumBy.id("authenticationRequired"));
+        return driver.findElement(byId("authenticationRequired"));
     }
 
     public static WebElement getCreateKeyButton(WebDriver driver) {
-        return driver.findElement(AppiumBy.id("createKeyButton"));
+        return driver.findElement(byId("createKeyButton"));
     }
 
     public static WebElement getInputElement(WebDriver driver) {
-        return driver.findElement(AppiumBy.id("input"));
+        return driver.findElement(byId("input"));
     }
 
     public static WebElement getPublicKeyElement(WebDriver driver) {
-        return driver.findElement(AppiumBy.id("publicKey"));
+        return driver.findElement(byId("publicKey"));
     }
 
     public static WebElement getRemoveKeyButton(WebDriver driver) {
@@ -43,19 +43,19 @@ public class SigningFragment {
     }
 
     public static WebElement getSignatureElement(WebDriver driver) {
-        return driver.findElement(AppiumBy.id("signature"));
+        return driver.findElement(byId("signature"));
     }
 
     public static WebElement getSignButton(WebDriver driver) {
-        return driver.findElement(AppiumBy.id("signButton"));
+        return driver.findElement(byId("signButton"));
     }
 
     public static WebElement getStatusElement(WebDriver driver) {
-        return driver.findElement(AppiumBy.id("status"));
+        return driver.findElement(byId("status"));
     }
 
     public static WebElement getVerifySignatureButton(WebDriver driver) {
-        return driver.findElement(AppiumBy.id("verifySignatureButton"));
+        return driver.findElement(byId("verifySignatureButton"));
     }
 
     public SigningFragment(AndroidDriver driver) {

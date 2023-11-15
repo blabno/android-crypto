@@ -5,10 +5,10 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 
-import io.appium.java_client.AppiumBy;
 import io.appium.java_client.android.AndroidDriver;
 
 import static com.labnoratory.android_device.e2e.FragmentHelper.assertText;
+import static com.labnoratory.android_device.e2e.FragmentHelper.byId;
 import static com.labnoratory.android_device.e2e.FragmentHelper.setText;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
@@ -16,38 +16,38 @@ import static org.hamcrest.Matchers.matchesPattern;
 
 public class SymmetricEncryptionFragment {
 
-    private static final By removeKeyButtonSelector = AppiumBy.id("removeKeyButton");
-    private static final By titleSelector = AppiumBy.id("title");
+    private static final By removeKeyButtonSelector = byId("removeKeyButton");
+    private static final By titleSelector = byId("title");
 
     private final AndroidDriver driver;
     private BiometricPromptFragment biometricPromptFragment;
 
     public static WebElement getAuthenticationRequired(WebDriver driver) {
-        return driver.findElement(AppiumBy.id("authenticationRequired"));
+        return driver.findElement(byId("authenticationRequired"));
     }
 
     public static WebElement getCipherTextElement(WebDriver driver) {
-        return driver.findElement(AppiumBy.id("cipherText"));
+        return driver.findElement(byId("cipherText"));
     }
 
     public static WebElement getCreateKeyButton(WebDriver driver) {
-        return driver.findElement(AppiumBy.id("createKeyButton"));
+        return driver.findElement(byId("createKeyButton"));
     }
 
     public static WebElement getDecryptButton(WebDriver driver) {
-        return driver.findElement(AppiumBy.id("decryptButton"));
+        return driver.findElement(byId("decryptButton"));
     }
 
     public static WebElement getEncryptButton(WebDriver driver) {
-        return driver.findElement(AppiumBy.id("encryptButton"));
+        return driver.findElement(byId("encryptButton"));
     }
 
     public static WebElement getInputElement(WebDriver driver) {
-        return driver.findElement(AppiumBy.id("input"));
+        return driver.findElement(byId("input"));
     }
 
     public static WebElement getIVElement(WebDriver driver) {
-        return driver.findElement(AppiumBy.id("iv"));
+        return driver.findElement(byId("iv"));
     }
 
     public static WebElement getRemoveKeyButton(WebDriver driver) {
@@ -55,7 +55,7 @@ public class SymmetricEncryptionFragment {
     }
 
     public static WebElement getStatusElement(WebDriver driver) {
-        return driver.findElement(AppiumBy.id("status"));
+        return driver.findElement(byId("status"));
     }
 
     public SymmetricEncryptionFragment(AndroidDriver driver) {
@@ -164,7 +164,9 @@ public class SymmetricEncryptionFragment {
         return this;
     }
 
-    /** @noinspection UnusedReturnValue*/
+    /**
+     * @noinspection UnusedReturnValue
+     */
     public SymmetricEncryptionFragment setIV(CharSequence... text) {
         setText(getIVElement(driver), text);
         return this;
