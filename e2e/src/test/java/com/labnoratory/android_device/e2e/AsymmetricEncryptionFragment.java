@@ -2,13 +2,13 @@ package com.labnoratory.android_device.e2e;
 
 import org.hamcrest.Matcher;
 import org.openqa.selenium.By;
-import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 
 import io.appium.java_client.android.AndroidDriver;
 
 import static com.labnoratory.android_device.e2e.FragmentHelper.assertText;
 import static com.labnoratory.android_device.e2e.FragmentHelper.byId;
+import static com.labnoratory.android_device.e2e.FragmentHelper.isDisplayed;
 import static com.labnoratory.android_device.e2e.FragmentHelper.setText;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
@@ -16,74 +16,50 @@ import static org.hamcrest.Matchers.matchesPattern;
 
 public class AsymmetricEncryptionFragment {
 
-    private static final By createKeyButtonSelector = byId("createKeyButton");
-    private static final By removeKeyButtonSelector = byId("removeKeyButton");
-    private static final By titleSelector = byId("title");
+    private static class Selectors {
+        private static final By authenticationRequired = byId("authenticationRequired");
+        private static final By cipherText = byId("cipherText");
+        private static final By createKeyButton = byId("createKeyButton");
+        private static final By decryptButton = byId("decryptButton");
+        private static final By encryptButton = byId("encryptButton");
+        private static final By input = byId("input");
+        private static final By removeKeyButton = byId("removeKeyButton");
+        private static final By status = byId("status");
+        private static final By title = byId("title");
+    }
 
     private final AndroidDriver driver;
     private BiometricPromptFragment biometricPromptFragment;
-
-    public static WebElement getAuthenticationRequired(WebDriver driver) {
-        return driver.findElement(byId("authenticationRequired"));
-    }
-
-    public static WebElement getCipherTextElement(WebDriver driver) {
-        return driver.findElement(byId("cipherText"));
-    }
-
-    public static WebElement getCreateKeyButton(WebDriver driver) {
-        return driver.findElement(createKeyButtonSelector);
-    }
-
-    public static WebElement getDecryptButton(WebDriver driver) {
-        return driver.findElement(byId("decryptButton"));
-    }
-
-    public static WebElement getEncryptButton(WebDriver driver) {
-        return driver.findElement(byId("encryptButton"));
-    }
-
-    public static WebElement getInputElement(WebDriver driver) {
-        return driver.findElement(byId("input"));
-    }
-
-    public static WebElement getRemoveKeyButton(WebDriver driver) {
-        return driver.findElement(removeKeyButtonSelector);
-    }
-
-    public static WebElement getStatusElement(WebDriver driver) {
-        return driver.findElement(byId("status"));
-    }
 
     public AsymmetricEncryptionFragment(AndroidDriver driver) {
         this.driver = driver;
     }
 
     public AsymmetricEncryptionFragment assertCipherText(Matcher<String> matcher) {
-        assertText(driver, AsymmetricEncryptionFragment::getCipherTextElement, matcher);
+        assertText(driver, Selectors.cipherText, matcher);
         return this;
     }
 
     public AsymmetricEncryptionFragment assertStatus(Matcher<String> matcher) {
-        assertText(driver, AsymmetricEncryptionFragment::getStatusElement, matcher);
+        assertText(driver, Selectors.status, matcher);
         return this;
     }
 
     public AsymmetricEncryptionFragment assureKeyDoesNotRequireAuthentication() {
-        WebElement authenticationRequired = getAuthenticationRequired(driver);
+        WebElement authenticationRequired = driver.findElement(Selectors.authenticationRequired);
         if (authenticationRequired.getText().matches(".*ON.*")) {
             authenticationRequired.click();
         }
-        assertText(driver, AsymmetricEncryptionFragment::getAuthenticationRequired, matchesPattern(".*OFF.*"));
+        assertText(driver, Selectors.authenticationRequired, matchesPattern(".*OFF.*"));
         return this;
     }
 
     public AsymmetricEncryptionFragment assureKeyRequiresAuthentication() {
-        WebElement authenticationRequired = getAuthenticationRequired(driver);
+        WebElement authenticationRequired = driver.findElement(Selectors.authenticationRequired);
         if (authenticationRequired.getText().matches(".*OFF.*")) {
             authenticationRequired.click();
         }
-        assertText(driver, AsymmetricEncryptionFragment::getAuthenticationRequired, matchesPattern(".*ON.*"));
+        assertText(driver, Selectors.authenticationRequired, matchesPattern(".*ON.*"));
         return this;
     }
 
@@ -95,22 +71,22 @@ public class AsymmetricEncryptionFragment {
     }
 
     public AsymmetricEncryptionFragment clickCreateKeyButton() {
-        getCreateKeyButton(driver).click();
+        driver.findElement(Selectors.createKeyButton).click();
         return this;
     }
 
     public AsymmetricEncryptionFragment clickRemoveKeyButton() {
-        getRemoveKeyButton(driver).click();
+        driver.findElement(Selectors.removeKeyButton).click();
         return this;
     }
 
     public AsymmetricEncryptionFragment clickDecryptButton() {
-        getDecryptButton(driver).click();
+        driver.findElement(Selectors.decryptButton).click();
         return this;
     }
 
     public AsymmetricEncryptionFragment clickEncryptButton() {
-        getEncryptButton(driver).click();
+        driver.findElement(Selectors.encryptButton).click();
         return this;
     }
 
@@ -120,11 +96,11 @@ public class AsymmetricEncryptionFragment {
     }
 
     public String getCipherText() {
-        return getCipherTextElement(driver).getText();
+        return driver.findElement(Selectors.cipherText).getText();
     }
 
     public boolean isKeyAvailable() {
-        return !driver.findElements(removeKeyButtonSelector).isEmpty();
+        return isDisplayed(driver, Selectors.removeKeyButton);
     }
 
     public AsymmetricEncryptionFragment removeKey() {
@@ -143,17 +119,17 @@ public class AsymmetricEncryptionFragment {
      * @noinspection UnusedReturnValue
      */
     public AsymmetricEncryptionFragment setCipherText(CharSequence... text) {
-        setText(getCipherTextElement(driver), text);
+        setText(driver.findElement(Selectors.cipherText), text);
         return this;
     }
 
     public AsymmetricEncryptionFragment setInput(CharSequence... text) {
-        setText(getInputElement(driver), text);
+        setText(driver.findElement(Selectors.input), text);
         return this;
     }
 
     public AsymmetricEncryptionFragment waitUntilDisplayed() {
-        FragmentHelper.waitUntilDisplayed(driver, titleSelector);
+        assertText(driver, Selectors.title, is(equalTo("Encrypt\nasymmetrically")));
         return this;
     }
 

@@ -19,45 +19,25 @@ import static com.labnoratory.android_device.e2e.E2EHelper.scanEnrolledFinger;
 import static com.labnoratory.android_device.e2e.E2EHelper.sleep;
 import static com.labnoratory.android_device.e2e.FragmentHelper.byText;
 import static com.labnoratory.android_device.e2e.FragmentHelper.setText;
+import static com.labnoratory.android_device.e2e.FragmentHelper.waitUntilDisappears;
+import static com.labnoratory.android_device.e2e.FragmentHelper.waitUntilDisplayed;
 
 public class SecuritySettingsFragment {
 
-    private static final By pinEntrySelector = By.id("com.android.settings:id/password_entry");
-    private static final By deleteButtonSelector = By.id("com.android.settings:id/delete_button");
-    private static final By deviceSecurityLabel = byText("DEVICE SECURITY");
-    private static final By doneButtonSelector = byText("DONE");
-    private static final By addFingerprintButtonSelector = byText("Add fingerprint");
+    private static class Selectors {
+        private static final By addFingerprintButton = byText("Add fingerprint");
+        private static final By deleteButton = By.id("com.android.settings:id/delete_button");
+        private static final By deviceSecurityLabel = byText("DEVICE SECURITY");
+        private static final By doneButton = byText("DONE");
+        private static final By pinEntry = By.id("com.android.settings:id/password_entry");
+    }
 
     private final AndroidDriver driver;
-
-    public static WebElement getAddFingerprintButton(WebDriver driver) {
-        return driver.findElement(addFingerprintButtonSelector);
-    }
-
-    public static WebElement getDeleteButton(WebDriver driver) {
-        return driver.findElement(deleteButtonSelector);
-    }
 
     public static WebElement getDeleteConfirmButton(WebDriver driver) {
         List<WebElement> elements = driver.findElements(byText("Yes, remove"));
         if (elements.isEmpty()) elements = driver.findElements(byText("Delete"));
         return elements.get(0);
-    }
-
-    public static WebElement getDoneButton(WebDriver driver) {
-        return driver.findElement(doneButtonSelector);
-    }
-
-    public static WebElement getFingerprintMenuItemElement(WebDriver driver) {
-        return driver.findElement(byText("Fingerprint"));
-    }
-
-    public static WebElement getNextButton(WebDriver driver) {
-        return driver.findElement(byText("NEXT"));
-    }
-
-    public static WebElement getPINInputElement(WebDriver driver) {
-        return driver.findElement(pinEntrySelector);
     }
 
     public static void setupFingerprint(AndroidDriver driver) {
@@ -87,53 +67,54 @@ public class SecuritySettingsFragment {
         this.driver = driver;
     }
 
-    /** @noinspection UnusedReturnValue*/
+    /**
+     * @noinspection UnusedReturnValue
+     */
     public SecuritySettingsFragment clickAddFingerprintButton() {
-        getAddFingerprintButton(driver).click();
-        new WebDriverWait(driver, Duration.ofSeconds(1))
-                .until(webDriver -> webDriver.findElements(addFingerprintButtonSelector).isEmpty());
+        driver.findElement(Selectors.addFingerprintButton).click();
+        waitUntilDisappears(driver, Selectors.addFingerprintButton);
         return this;
     }
 
     public SecuritySettingsFragment clickFingerprintMenuItem() {
-        getFingerprintMenuItemElement(driver).click();
-        new WebDriverWait(driver, Duration.ofSeconds(1))
-                .until(webDriver -> !webDriver.findElements(byText("Re-enter your PIN")).isEmpty());
+        driver.findElement(byText("Fingerprint")).click();
+        waitUntilDisplayed(driver, byText("Re-enter your PIN"));
         return this;
     }
 
     public SecuritySettingsFragment enterPIN(CharSequence... text) {
-        setText(getPINInputElement(driver), text);
+        setText(driver.findElement(Selectors.pinEntry), text);
         driver.pressKey(new KeyEvent(AndroidKey.ENTER));
-        new WebDriverWait(driver, Duration.ofSeconds(1))
-                .until(webDriver -> webDriver.findElements(pinEntrySelector).isEmpty());
+        waitUntilDisappears(driver, Selectors.pinEntry);
         return this;
     }
 
-    /** @noinspection UnusedReturnValue*/
+    /**
+     * @noinspection UnusedReturnValue
+     */
     public SecuritySettingsFragment clickNext() {
-        getNextButton(driver).click();
-        new WebDriverWait(driver, Duration.ofSeconds(1))
-                .until(webDriver -> !webDriver.findElements(byText("Touch the sensor")).isEmpty());
+        driver.findElement(byText("NEXT")).click();
+        waitUntilDisplayed(driver, byText("Touch the sensor"));
         return this;
     }
 
-    /** @noinspection UnusedReturnValue*/
+    /**
+     * @noinspection UnusedReturnValue
+     */
     public SecuritySettingsFragment clickDone() {
-        getDoneButton(driver).click();
-        new WebDriverWait(driver, Duration.ofSeconds(1))
-                .until(webDriver -> webDriver.findElements(doneButtonSelector).isEmpty());
+        driver.findElement(Selectors.doneButton).click();
+        waitUntilDisappears(driver, Selectors.doneButton);
         return this;
     }
 
     public boolean hasFingersEnrolled() {
-        return !driver.findElements(deleteButtonSelector).isEmpty();
+        return !driver.findElements(Selectors.deleteButton).isEmpty();
     }
 
     public SecuritySettingsFragment open() {
         adbShell("am start -a android.settings.SECURITY_SETTINGS");
         int i = 0;
-        while (driver.findElements(deviceSecurityLabel).isEmpty()) {
+        while (driver.findElements(Selectors.deviceSecurityLabel).isEmpty()) {
             emulateBackButton();
             sleep(500);
             if (i++ > 10) throw new RuntimeException("Failed to open security settings");
@@ -143,11 +124,11 @@ public class SecuritySettingsFragment {
 
     public SecuritySettingsFragment removeFingers() {
         while (hasFingersEnrolled()) {
-            int initialDeleteButtonsCount = driver.findElements(deleteButtonSelector).size();
-            getDeleteButton(driver).click();
+            int initialDeleteButtonsCount = driver.findElements(Selectors.deleteButton).size();
+            driver.findElement(Selectors.deleteButton).click();
             getDeleteConfirmButton(driver).click();
             new WebDriverWait(driver, Duration.ofSeconds(1))
-                    .until(webDriver -> initialDeleteButtonsCount != driver.findElements(deleteButtonSelector).size());
+                    .until(webDriver -> initialDeleteButtonsCount != driver.findElements(Selectors.deleteButton).size());
         }
         return this;
     }
@@ -157,8 +138,7 @@ public class SecuritySettingsFragment {
             scanEnrolledFinger();
             sleep(500);
         }
-        new WebDriverWait(driver, Duration.ofSeconds(1))
-                .until(webDriver -> !webDriver.findElements(doneButtonSelector).isEmpty());
+        waitUntilDisplayed(driver, Selectors.doneButton);
         return this;
     }
 }

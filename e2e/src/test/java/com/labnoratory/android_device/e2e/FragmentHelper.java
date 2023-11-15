@@ -18,6 +18,14 @@ import static org.hamcrest.MatcherAssert.assertThat;
 
 public class FragmentHelper {
 
+    public static void assertText(WebDriver driver, By selector, Matcher<String> matcher) {
+        assertText(driver, selector, matcher, "");
+    }
+
+    public static void assertText(WebDriver driver, By selector, Matcher<String> matcher, String errorMessage) {
+        assertText(driver, webDriver -> webDriver.findElement(selector), matcher, errorMessage);
+    }
+
     public static void assertText(WebDriver driver, Function<WebDriver, WebElement> getElement, Matcher<String> matcher) {
         assertText(driver, getElement, matcher, "");
     }
@@ -56,13 +64,17 @@ public class FragmentHelper {
         element.sendKeys(text);
     }
 
+    public static boolean isDisplayed(WebDriver driver, By selector) {
+        return !driver.findElements(selector).isEmpty();
+    }
+
     public static void waitUntilDisappears(WebDriver driver, By selector) {
         new WebDriverWait(driver, Duration.ofSeconds(1))
-                .until(webDriver -> webDriver.findElements(selector).isEmpty());
+                .until(webDriver -> !isDisplayed(webDriver, selector));
     }
 
     public static void waitUntilDisplayed(AndroidDriver driver, By selector) {
         new WebDriverWait(driver, Duration.ofSeconds(2))
-                .until(webDriver -> !webDriver.findElements(selector).isEmpty());
+                .until(webDriver -> isDisplayed(webDriver, selector));
     }
 }

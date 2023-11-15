@@ -2,41 +2,33 @@ package com.labnoratory.android_device.e2e;
 
 import org.hamcrest.Matcher;
 import org.openqa.selenium.By;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
 
 import io.appium.java_client.android.AndroidDriver;
 
 import static com.labnoratory.android_device.e2e.FragmentHelper.assertText;
 import static com.labnoratory.android_device.e2e.FragmentHelper.byId;
 import static org.hamcrest.Matchers.emptyString;
+import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 
 public class AuthenticationFragment {
 
-    private static final By titleSelector = byId("title");
+    private static class Selectors {
+        private static final By authenticateButton = byId("authenticateButton");
+        private static final By title = byId("title");
+        private static final By clearButton = byId("clearButton");
+        private static final By status = byId("status");
+    }
 
     private final AndroidDriver driver;
     private BiometricPromptFragment biometricPromptFragment;
-
-    public static WebElement getAuthenticateButton(WebDriver driver) {
-        return driver.findElement(byId("authenticateButton"));
-    }
-
-    public static WebElement getClearButton(WebDriver driver) {
-        return driver.findElement(byId("clearButton"));
-    }
-
-    public static WebElement getStatusElement(WebDriver driver) {
-        return driver.findElement(byId("status"));
-    }
 
     public AuthenticationFragment(AndroidDriver driver) {
         this.driver = driver;
     }
 
     public AuthenticationFragment assertStatus(Matcher<String> matcher) {
-        assertText(driver, AuthenticationFragment::getStatusElement, matcher);
+        assertText(driver, Selectors.status, matcher);
         return this;
     }
 
@@ -46,13 +38,13 @@ public class AuthenticationFragment {
     }
 
     public AuthenticationFragment clickAuthenticateButton() {
-        getAuthenticateButton(driver).click();
+        driver.findElement(Selectors.authenticateButton).click();
         getBiometricPromptFragment().waitUntilDisplayed();
         return this;
     }
 
     public AuthenticationFragment clickClearButton() {
-        getClearButton(driver).click();
+        driver.findElement(Selectors.clearButton).click();
         return assertStatus(is(emptyString()));
     }
 
@@ -67,7 +59,7 @@ public class AuthenticationFragment {
     }
 
     public AuthenticationFragment waitUntilDisplayed() {
-        FragmentHelper.waitUntilDisplayed(driver, titleSelector);
+        assertText(driver, Selectors.title, is(equalTo("Authenticate")));
         return this;
     }
 

@@ -2,68 +2,43 @@ package com.labnoratory.android_device.e2e;
 
 import org.hamcrest.Matcher;
 import org.openqa.selenium.By;
-import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 
 import io.appium.java_client.android.AndroidDriver;
 
 import static com.labnoratory.android_device.e2e.FragmentHelper.assertText;
 import static com.labnoratory.android_device.e2e.FragmentHelper.byId;
+import static com.labnoratory.android_device.e2e.FragmentHelper.isDisplayed;
 import static com.labnoratory.android_device.e2e.FragmentHelper.setText;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.matchesPattern;
+import static org.hamcrest.Matchers.not;
 
 public class SymmetricEncryptionFragment {
 
-    private static final By removeKeyButtonSelector = byId("removeKeyButton");
-    private static final By titleSelector = byId("title");
+    private static class Selectors {
+        private static final By authenticationRequired = byId("authenticationRequired");
+        private static final By cipherText = byId("cipherText");
+        private static final By createKeyButton = byId("createKeyButton");
+        private static final By decryptButton = byId("decryptButton");
+        private static final By encryptButton = byId("encryptButton");
+        private static final By input = byId("input");
+        private static final By iv = byId("iv");
+        private static final By removeKeyButton = byId("removeKeyButton");
+        private static final By status = byId("status");
+        private static final By title = byId("title");
+    }
 
     private final AndroidDriver driver;
     private BiometricPromptFragment biometricPromptFragment;
-
-    public static WebElement getAuthenticationRequired(WebDriver driver) {
-        return driver.findElement(byId("authenticationRequired"));
-    }
-
-    public static WebElement getCipherTextElement(WebDriver driver) {
-        return driver.findElement(byId("cipherText"));
-    }
-
-    public static WebElement getCreateKeyButton(WebDriver driver) {
-        return driver.findElement(byId("createKeyButton"));
-    }
-
-    public static WebElement getDecryptButton(WebDriver driver) {
-        return driver.findElement(byId("decryptButton"));
-    }
-
-    public static WebElement getEncryptButton(WebDriver driver) {
-        return driver.findElement(byId("encryptButton"));
-    }
-
-    public static WebElement getInputElement(WebDriver driver) {
-        return driver.findElement(byId("input"));
-    }
-
-    public static WebElement getIVElement(WebDriver driver) {
-        return driver.findElement(byId("iv"));
-    }
-
-    public static WebElement getRemoveKeyButton(WebDriver driver) {
-        return driver.findElement(removeKeyButtonSelector);
-    }
-
-    public static WebElement getStatusElement(WebDriver driver) {
-        return driver.findElement(byId("status"));
-    }
 
     public SymmetricEncryptionFragment(AndroidDriver driver) {
         this.driver = driver;
     }
 
     public SymmetricEncryptionFragment assertStatus(Matcher<String> matcher) {
-        assertText(driver, SymmetricEncryptionFragment::getStatusElement, matcher);
+        assertText(driver, Selectors.status, matcher);
         return this;
     }
 
@@ -73,30 +48,32 @@ public class SymmetricEncryptionFragment {
     }
 
     public SymmetricEncryptionFragment assertCipherText(Matcher<String> matcher) {
-        assertText(driver, SymmetricEncryptionFragment::getCipherTextElement, matcher);
+        assertText(driver, Selectors.cipherText, matcher);
         return this;
     }
 
     public SymmetricEncryptionFragment assertIV(Matcher<String> matcher) {
-        assertText(driver, SymmetricEncryptionFragment::getIVElement, matcher);
+        assertText(driver, Selectors.iv, matcher);
         return this;
     }
 
     public SymmetricEncryptionFragment assureKeyDoesNotRequireAuthentication() {
-        WebElement authenticationRequired = getAuthenticationRequired(driver);
-        if (authenticationRequired.getText().matches(".*ON.*")) {
+        WebElement authenticationRequired = driver.findElement(Selectors.authenticationRequired);
+        Matcher<String> matcher = matchesPattern(".*ON.*");
+        if (matcher.matches(authenticationRequired.getText())) {
             authenticationRequired.click();
         }
-        assertText(driver, SymmetricEncryptionFragment::getAuthenticationRequired, matchesPattern(".*OFF.*"));
+        assertText(driver, Selectors.authenticationRequired, not(matcher));
         return this;
     }
 
     public SymmetricEncryptionFragment assureKeyRequiresAuthentication() {
-        WebElement authenticationRequired = getAuthenticationRequired(driver);
-        if (authenticationRequired.getText().matches(".*OFF.*")) {
+        WebElement authenticationRequired = driver.findElement(Selectors.authenticationRequired);
+        Matcher<String> matcher = matchesPattern(".*ON.*");
+        if (not(matcher).matches(authenticationRequired.getText())) {
             authenticationRequired.click();
         }
-        assertText(driver, SymmetricEncryptionFragment::getAuthenticationRequired, matchesPattern(".*ON.*"));
+        assertText(driver, Selectors.authenticationRequired, matcher);
         return this;
     }
 
@@ -108,22 +85,22 @@ public class SymmetricEncryptionFragment {
     }
 
     public SymmetricEncryptionFragment clickCreateKeyButton() {
-        getCreateKeyButton(driver).click();
+        driver.findElement(Selectors.createKeyButton).click();
         return this;
     }
 
     public SymmetricEncryptionFragment clickRemoveKeyButton() {
-        getRemoveKeyButton(driver).click();
+        driver.findElement(Selectors.removeKeyButton).click();
         return this;
     }
 
     public SymmetricEncryptionFragment clickDecryptButton() {
-        getDecryptButton(driver).click();
+        driver.findElement(Selectors.decryptButton).click();
         return this;
     }
 
     public SymmetricEncryptionFragment clickEncryptButton() {
-        getEncryptButton(driver).click();
+        driver.findElement(Selectors.encryptButton).click();
         return this;
     }
 
@@ -132,15 +109,15 @@ public class SymmetricEncryptionFragment {
     }
 
     public String getCipherText() {
-        return getCipherTextElement(driver).getText();
+        return driver.findElement(Selectors.cipherText).getText();
     }
 
     public String getIv() {
-        return getIVElement(driver).getText();
+        return driver.findElement(Selectors.iv).getText();
     }
 
     public boolean isKeyAvailable() {
-        return !driver.findElements(removeKeyButtonSelector).isEmpty();
+        return isDisplayed(driver, Selectors.removeKeyButton);
     }
 
     public SymmetricEncryptionFragment removeKey() {
@@ -155,12 +132,12 @@ public class SymmetricEncryptionFragment {
     }
 
     public SymmetricEncryptionFragment setCipherText(CharSequence... text) {
-        setText(getCipherTextElement(driver), text);
+        setText(driver.findElement(Selectors.cipherText), text);
         return this;
     }
 
     public SymmetricEncryptionFragment setInput(CharSequence... text) {
-        setText(getInputElement(driver), text);
+        setText(driver.findElement(Selectors.input), text);
         return this;
     }
 
@@ -168,12 +145,12 @@ public class SymmetricEncryptionFragment {
      * @noinspection UnusedReturnValue
      */
     public SymmetricEncryptionFragment setIV(CharSequence... text) {
-        setText(getIVElement(driver), text);
+        setText(driver.findElement(Selectors.iv), text);
         return this;
     }
 
     public SymmetricEncryptionFragment waitUntilDisplayed() {
-        FragmentHelper.waitUntilDisplayed(driver, titleSelector);
+        assertText(driver, Selectors.title, is(equalTo("Encrypt\nsymmetrically")));
         return this;
     }
 

@@ -2,119 +2,104 @@ package com.labnoratory.android_device.e2e;
 
 import org.hamcrest.Matcher;
 import org.openqa.selenium.By;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
 
 import io.appium.java_client.android.AndroidDriver;
 
 import static com.labnoratory.android_device.e2e.FragmentHelper.assertText;
 import static com.labnoratory.android_device.e2e.FragmentHelper.byId;
 import static com.labnoratory.android_device.e2e.FragmentHelper.setText;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.is;
 
 public class SymmetricEncryptionWithPasswordFragment {
 
-    private static final By titleSelector = byId("title");
+    private static class Selectors {
+        private static final By cipherText = byId("cipherText");
+        private static final By decryptButton = byId("decryptButton");
+        private static final By encryptButton = byId("encryptButton");
+        private static final By input = byId("input");
+        private static final By iterations = byId("iterations");
+        private static final By iv = byId("iv");
+        private static final By password = byId("password");
+        private static final By salt = byId("salt");
+        private static final By status = byId("status");
+        private static final By title = byId("title");
+    }
 
     private final AndroidDriver driver;
-
-    public static WebElement getCipherTextElement(WebDriver driver) {
-        return driver.findElement(byId("cipherText"));
-    }
-
-    public static WebElement getInputElement(WebDriver driver) {
-        return driver.findElement(byId("input"));
-    }
-
-    public static WebElement getIVElement(WebDriver driver) {
-        return driver.findElement(byId("iv"));
-    }
-
-    public static WebElement getIterationsElement(WebDriver driver) {
-        return driver.findElement(byId("iterations"));
-    }
-
-    public static WebElement getPasswordElement(WebDriver driver) {
-        return driver.findElement(byId("password"));
-    }
-
-    public static WebElement getSaltElement(WebDriver driver) {
-        return driver.findElement(byId("salt"));
-    }
-
-    public static WebElement getStatusElement(WebDriver driver) {
-        return driver.findElement(byId("status"));
-    }
 
     public SymmetricEncryptionWithPasswordFragment(AndroidDriver driver) {
         this.driver = driver;
     }
 
     public SymmetricEncryptionWithPasswordFragment assertCipherText(Matcher<String> matcher) {
-        assertText(driver, SymmetricEncryptionWithPasswordFragment::getCipherTextElement, matcher);
+        assertText(driver, Selectors.cipherText, matcher);
         return this;
     }
 
     public SymmetricEncryptionWithPasswordFragment assertIV(Matcher<String> matcher) {
-        assertText(driver, SymmetricEncryptionWithPasswordFragment::getIVElement, matcher);
+        assertText(driver, Selectors.iv, matcher);
         return this;
     }
 
     public SymmetricEncryptionWithPasswordFragment assertStatus(Matcher<String> matcher) {
-        assertText(driver, SymmetricEncryptionWithPasswordFragment::getStatusElement, matcher);
+        assertText(driver, Selectors.status, matcher);
         return this;
     }
 
     public SymmetricEncryptionWithPasswordFragment clickDecryptButton() {
-        driver.findElement(byId("decryptButton")).click();
+        driver.findElement(Selectors.decryptButton).click();
         return this;
     }
 
     public SymmetricEncryptionWithPasswordFragment clickEncryptButton() {
-        driver.findElement(byId("encryptButton")).click();
+        driver.findElement(Selectors.encryptButton).click();
         return this;
     }
 
     public String getCipherText() {
-        return getCipherTextElement(driver).getText();
+        return driver.findElement(Selectors.cipherText).getText();
     }
 
     public String getIV() {
-        return getIVElement(driver).getText();
+        return driver.findElement(Selectors.iv).getText();
     }
 
     public SymmetricEncryptionWithPasswordFragment setCipherText(CharSequence... text) {
-        setText(getCipherTextElement(driver), text);
+        setText(driver.findElement(Selectors.cipherText), text);
         return this;
     }
 
     public SymmetricEncryptionWithPasswordFragment setInput(CharSequence... text) {
-        setText(getInputElement(driver), text);
+        setText(driver.findElement(Selectors.input), text);
         return this;
     }
 
     public SymmetricEncryptionWithPasswordFragment setIterations(CharSequence... text) {
-        setText(getIterationsElement(driver), text);
+        setText(driver.findElement(Selectors.iterations), text);
         return this;
     }
 
-    /** @noinspection UnusedReturnValue*/
+    /**
+     * @noinspection UnusedReturnValue
+     */
     public SymmetricEncryptionWithPasswordFragment setIV(CharSequence... text) {
-        setText(getIVElement(driver), text);
+        setText(driver.findElement(Selectors.iv), text);
         return this;
     }
 
     public SymmetricEncryptionWithPasswordFragment setPassword(CharSequence... text) {
-        setText(getPasswordElement(driver), text);
+        setText(driver.findElement(Selectors.password), text);
         return this;
     }
 
     public SymmetricEncryptionWithPasswordFragment setSalt(CharSequence... text) {
-        setText(getSaltElement(driver), text);
+        setText(driver.findElement(Selectors.salt), text);
         return this;
     }
 
     public SymmetricEncryptionWithPasswordFragment waitUntilDisplayed() {
-        FragmentHelper.waitUntilDisplayed(driver, titleSelector);
+        assertText(driver, Selectors.title, is(equalTo("Encrypt with password")));
         return this;
     }
 }

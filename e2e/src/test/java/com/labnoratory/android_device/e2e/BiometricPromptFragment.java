@@ -17,9 +17,6 @@ public class BiometricPromptFragment {
         this.driver = driver;
     }
 
-    /**
-     * @noinspection UnusedReturnValue
-     */
     public BiometricPromptFragment scanEnrolledFinger() {
         E2EHelper.scanEnrolledFinger();
         waitUntilDisappears();
@@ -39,13 +36,11 @@ public class BiometricPromptFragment {
      * @noinspection UnusedReturnValue
      */
     public BiometricPromptFragment cancel() {
-        By cancelButtonSelector = byText("Cancel");
-        driver.findElement(cancelButtonSelector).click();
+        driver.findElement(byText("Cancel")).click();
         waitUntilDisappears();
         return this;
     }
 
-    /** @noinspection UnusedReturnValue*/
     public BiometricPromptFragment waitUntilDisplayed() {
         FragmentHelper.waitUntilDisplayed(driver, biometricAuthenticationLabel);
         return this;
